@@ -1,0 +1,7 @@
+{
+  "name": "MyTailorBook",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
