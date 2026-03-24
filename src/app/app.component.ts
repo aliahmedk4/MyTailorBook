@@ -7,5 +7,11 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
+  menuPages = [
+    { title: 'Customers', url: '/home',   icon: 'people-outline' },
+    { title: 'Orders',    url: '/orders', icon: 'receipt-outline' },
+    { title: 'Backup',    url: '/backup', icon: 'cloud-outline' },
+  ];
+
   constructor() {}
 }

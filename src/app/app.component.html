@@ -1,3 +1,46 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-menu contentId="main-content" type="overlay">
+    <ion-header>
+      <ion-toolbar>
+        <div class="menu-header">
+          <div class="menu-logo">
+            <ion-icon name="cut-outline"></ion-icon>
+          </div>
+          <div class="menu-brand">
+            <h2>Tailor Book</h2>
+            <p>Professional Edition</p>
+          </div>
+        </div>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="menu-section-label">NAVIGATION</div>
+      <ion-list lines="none">
+        <ion-menu-toggle auto-hide="false" *ngFor="let page of menuPages">
+          <ion-item [routerLink]="page.url" routerLinkActive="active-menu-item"
+            routerDirection="root" detail="false" class="menu-item">
+            <div class="menu-icon-wrap" slot="start">
+              <ion-icon [name]="page.icon"></ion-icon>
+            </div>
+            <ion-label>{{ page.title }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+
+      <div class="menu-footer">
+        <div class="footer-card">
+          <div class="footer-icon">
+            <ion-icon name="cut-outline"></ion-icon>
+          </div>
+          <div>
+            <p class="footer-title">My Tailor Book</p>
+            <p class="footer-sub">v1.0 · Offline Ready</p>
+          </div>
+        </div>
+      </div>
+    </ion-content>
+  </ion-menu>
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>

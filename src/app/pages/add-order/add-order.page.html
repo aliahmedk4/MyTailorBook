@@ -1,0 +1,178 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/orders"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Edit Order' : 'New Order' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" (ngSubmit)="save()">
+
+    <!-- Image Picker -->
+    <div class="image-section">
+      <div class="image-preview-wrap" (click)="imgInput.click()">
+        <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img" alt="order"/>
+        <div *ngIf="!imagePreview" class="image-placeholder">
+          <ion-icon name="camera-outline"></ion-icon>
+          <span>Add Photo</span>
+          <small>Tap to upload dress image</small>
+        </div>
+        <div *ngIf="imagePreview" class="image-overlay">
+          <ion-icon name="camera-outline"></ion-icon>
+          <span>Change</span>
+        </div>
+      </div>
+      <ion-button *ngIf="imagePreview" fill="clear" color="danger" size="small"
+        class="remove-img-btn" (click)="removeImage()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon> Remove
+      </ion-button>
+        <input #imgInput type="file" accept="image/*" hidden (change)="onImagePicked($event)"/>
+    </div>
+
+    <!-- Measure Estimate Prompt -->
+    <div class="measure-prompt-backdrop" *ngIf="showMeasurePrompt" (click)="dismissPrompt()"></div>
+    <div class="measure-prompt-sheet" *ngIf="showMeasurePrompt">
+      <div class="prompt-handle"></div>
+      <div class="prompt-title">
+        <ion-icon name="body-outline"></ion-icon>
+        Auto-fill Measurements
+      </div>
+      <p class="prompt-sub">Enter body info to estimate sizes from photo</p>
+
+      <div class="gender-toggle">
+        <button class="gender-btn" [class.active]="promptGender === 'male'" (click)="promptGender = 'male'">
+          <ion-icon name="man-outline"></ion-icon> Male
+        </button>
+        <button class="gender-btn" [class.active]="promptGender === 'female'" (click)="promptGender = 'female'">
+          <ion-icon name="woman-outline"></ion-icon> Female
+        </button>
+      </div>
+
+      <div class="prompt-inputs">
+        <div class="prompt-field">
+          <label>Height (cm)</label>
+          <input type="number" inputmode="numeric" placeholder="e.g. 170" [(ngModel)]="promptHeight"/>
+        </div>
+        <div class="prompt-field">
+          <label>Weight (kg)</label>
+          <input type="number" inputmode="numeric" placeholder="e.g. 70" [(ngModel)]="promptWeight"/>
+        </div>
+      </div>
+
+      <div class="prompt-actions">
+        <button class="btn-skip" (click)="dismissPrompt()">Skip</button>
+        <button class="btn-apply" (click)="applyEstimate()">
+          <ion-icon name="flash-outline"></ion-icon> Auto-fill
+        </button>
+      </div>
+    </div>
+
+    <div class="form-body">
+
+      <!-- Customer -->
+      <div class="field-group-label">Customer</div>
+      <div class="form-card">
+        <ion-item lines="none" class="form-item">
+          <ion-icon name="person-outline" slot="start" class="field-icon"></ion-icon>
+          <ion-label position="stacked">Select Customer <span class="req">*</span></ion-label>
+          <ion-select formControlName="customerId" (ionChange)="onCustomerChange($event)"
+            interface="action-sheet" placeholder="Choose customer">
+            <ion-select-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Dress Details -->
+      <div class="field-group-label">Dress Details</div>
+      <div class="form-card">
+        <ion-item lines="inset" class="form-item">
+          <ion-icon name="shirt-outline" slot="start" class="field-icon"></ion-icon>
+          <ion-label position="stacked">Dress Type <span class="req">*</span></ion-label>
+          <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)" interface="action-sheet">
+            <ion-select-option *ngFor="let t of dressTypes" [value]="t">{{ t }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="none" class="form-item" *ngIf="showCustomDress">
+          <ion-icon name="create-outline" slot="start" class="field-icon"></ion-icon>
+          <ion-label position="stacked">Custom Name</ion-label>
+          <ion-input formControlName="customDressType" placeholder="e.g. Sherwani, Lehenga..." clearInput></ion-input>
+        </ion-item>
+      </div>
+
+      <!-- Order Info -->
+      <div class="field-group-label">Order Info</div>
+      <div class="form-card">
+        <ion-grid class="ion-no-padding">
+          <ion-row>
+            <ion-col size="6">
+              <ion-item lines="none" class="form-item">
+                <ion-icon name="layers-outline" slot="start" class="field-icon"></ion-icon>
+                <ion-label position="stacked">Qty <span class="req">*</span></ion-label>
+                <ion-input formControlName="quantity" type="number" inputmode="numeric" min="1"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item lines="none" class="form-item">
+                <ion-icon name="cash-outline" slot="start" class="field-icon"></ion-icon>
+                <ion-label position="stacked">Price (₨)</ion-label>
+                <ion-input formControlName="price" type="number" inputmode="decimal" placeholder="0"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <ion-item lines="inset" class="form-item">
+          <ion-icon name="calendar-outline" slot="start" class="field-icon"></ion-icon>
+          <ion-label position="stacked">Due Date</ion-label>
+          <ion-input formControlName="dueDate" type="date"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="form-item">
+          <ion-icon name="flag-outline" slot="start" class="field-icon"></ion-icon>
+          <ion-label position="stacked">Status</ion-label>
+          <ion-select formControlName="status" interface="action-sheet">
+            <ion-select-option *ngFor="let s of statuses" [value]="s">{{ s }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Measurements -->
+      <div class="field-group-label">
+        Measurements (inches)
+        <span class="autofill-hint" *ngIf="customer">· auto-filled if saved</span>
+      </div>
+      <div class="form-card measurements-card">
+        <ion-grid class="ion-no-padding">
+          <ion-row>
+            <ion-col size="4" *ngFor="let f of measurementFields">
+              <div class="measure-field">
+                <ion-input [formControlName]="f.key" type="number" inputmode="decimal"
+                  placeholder="0" class="measure-input"></ion-input>
+                <span class="measure-label">{{ f.label }}</span>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+
+      <!-- Notes -->
+      <div class="field-group-label">Notes</div>
+      <div class="form-card">
+        <ion-item lines="none" class="form-item">
+          <ion-icon name="document-text-outline" slot="start" class="field-icon"></ion-icon>
+          <ion-textarea formControlName="notes" placeholder="Fabric, fit preference, special instructions..."
+            rows="3" autoGrow></ion-textarea>
+        </ion-item>
+      </div>
+
+      <ion-button expand="block" type="submit" class="save-btn" [disabled]="form.invalid">
+        <ion-icon slot="start" name="{{ isEdit ? 'checkmark-circle-outline' : 'add-circle-outline' }}"></ion-icon>
+        {{ isEdit ? 'Update Order' : 'Create Order' }}
+      </ion-button>
+
+    </div>
+  </form>
+</ion-content>

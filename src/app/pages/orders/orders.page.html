@@ -1,0 +1,122 @@
+<ion-header class="orders-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/add-order/pick/new" fill="clear">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <div class="orders-hero">
+    <div class="hero-left">
+      <p class="hero-sub">Manage your work</p>
+      <h1 class="hero-title">Orders</h1>
+    </div>
+    <div class="hero-emoji">
+      <ion-icon name="receipt-outline"></ion-icon>
+    </div>
+  </div>
+
+  <div class="stat-pills">
+    <div class="stat-pill" [class.active]="filterStatus==='All'" (click)="filterStatus='All'; applyFilter()">
+      <span class="pill-num">{{ stats.total }}</span>
+      <span class="pill-lbl">All</span>
+    </div>
+    <div class="stat-pill pill-pending" [class.active]="filterStatus==='Pending'" (click)="filterStatus='Pending'; applyFilter()">
+      <span class="pill-num">{{ stats.pending }}</span>
+      <span class="pill-lbl">Pending</span>
+    </div>
+    <div class="stat-pill pill-progress" [class.active]="filterStatus==='In Progress'" (click)="filterStatus='In Progress'; applyFilter()">
+      <span class="pill-num">{{ stats.inProgress }}</span>
+      <span class="pill-lbl">Progress</span>
+    </div>
+    <div class="stat-pill pill-ready" [class.active]="filterStatus==='Ready'" (click)="filterStatus='Ready'; applyFilter()">
+      <span class="pill-num">{{ stats.ready }}</span>
+      <span class="pill-lbl">Ready</span>
+    </div>
+    <div class="stat-pill pill-done" [class.active]="filterStatus==='Delivered'" (click)="filterStatus='Delivered'; applyFilter()">
+      <span class="pill-num">{{ stats.delivered }}</span>
+      <span class="pill-lbl">Done</span>
+    </div>
+  </div>
+
+  <!-- Search INSIDE header so it sits on gradient -->
+  <div class="header-search">
+    <ion-icon name="search-outline" class="search-icon-left"></ion-icon>
+    <input
+      class="search-native"
+      [(ngModel)]="searchTerm"
+      (input)="applyFilter()"
+      placeholder="Search customer or dress type..."
+    />
+    <ion-icon name="close-circle" class="search-clear" *ngIf="searchTerm" (click)="searchTerm=''; applyFilter()"></ion-icon>
+  </div>
+</ion-header>
+
+<ion-content>
+  <div class="orders-list" *ngIf="filtered.length > 0">
+    <ion-item-sliding *ngFor="let order of filtered; let i = index">
+
+      <ion-item lines="none" class="order-card"
+        [routerLink]="['/add-order', order.customerId, order.id]" detail="false">
+
+        <div class="order-thumb" slot="start">
+          <img *ngIf="order.imageUrl" [src]="order.imageUrl" class="thumb-img" alt="order"/>
+          <div *ngIf="!order.imageUrl" class="thumb-placeholder" [class]="'tp-' + (i % 4)">
+            <span>{{ order.dressType.charAt(0) }}</span>
+          </div>
+          <div class="status-ring" [class]="'ring-' + statusKey(order.status)"></div>
+        </div>
+
+        <ion-label class="order-label">
+          <div class="order-top">
+            <span class="order-customer">{{ order.customerName }}</span>
+            <span class="status-chip" [class]="'chip-' + statusKey(order.status)">{{ order.status }}</span>
+          </div>
+          <p class="order-dress">
+            <ion-icon name="shirt-outline"></ion-icon>
+            {{ order.dressType }} · Qty {{ order.quantity }}
+          </p>
+          <div class="order-footer">
+            <span class="footer-price" *ngIf="order.price">
+              <ion-icon name="cash-outline"></ion-icon>₨ {{ order.price }}
+            </span>
+            <span class="footer-date" *ngIf="order.dueDate">
+              <ion-icon name="calendar-outline"></ion-icon>{{ order.dueDate }}
+            </span>
+          </div>
+        </ion-label>
+
+        <ion-icon name="chevron-forward" slot="end" class="card-arrow"></ion-icon>
+      </ion-item>
+
+      <ion-item-options side="start">
+        <ion-item-option (click)="changeStatus(order)" color="primary">
+          <ion-icon slot="top" name="refresh-outline"></ion-icon>
+          Next
+        </ion-item-option>
+      </ion-item-options>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="confirmDelete(order)">
+          <ion-icon slot="top" name="trash-outline"></ion-icon>
+          Delete
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </div>
+
+  <div *ngIf="filtered.length === 0" class="empty-state">
+    <div class="empty-emoji">📋</div>
+    <h3>No orders found</h3>
+    <p>Tap + to create a new order</p>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/add-order/pick/new" class="main-fab">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

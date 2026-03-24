@@ -1,37 +1,141 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+// ── Reset & Base ───────────────────────────────────────────────────
+* { box-sizing: border-box; }
+
+ion-content { --background: var(--t-bg); }
+
+ion-toolbar {
+  --background: transparent;
+  --border-width: 0;
+}
+
+// All headers use the gradient
+ion-header ion-toolbar:first-child {
+  background: var(--t-gradient);
+  padding-top: env(safe-area-inset-top);
+
+  ion-title {
+    color: #fff;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+
+  ion-back-button, ion-button, ion-menu-button {
+    --color: rgba(255,255,255,0.92);
+  }
+}
+
+// ── Page Transition ────────────────────────────────────────────────
+ion-router-outlet {
+  contain: layout size style;
+}
+
+// Slide-up + fade for page enter
+.ion-page {
+  animation: pageEnter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Cards ──────────────────────────────────────────────────────────
+ion-card {
+  border-radius: var(--t-radius-md);
+  box-shadow: var(--t-shadow-md);
+  margin: 8px 0;
+  border: 1px solid var(--t-border);
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:active { transform: scale(0.98); box-shadow: var(--t-shadow-sm); }
+}
+
+// ── Items ──────────────────────────────────────────────────────────
+ion-item {
+  --border-radius: var(--t-radius-sm);
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  transition: opacity 0.15s ease;
+}
+
+// ── Inputs ─────────────────────────────────────────────────────────
+ion-input, ion-textarea, ion-select {
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+// ── FAB ────────────────────────────────────────────────────────────
+ion-fab-button {
+  --background: var(--t-gradient);
+  --box-shadow: var(--t-shadow-lg);
+  transition: transform 0.2s ease;
+  &:active { transform: scale(0.92); }
+}
+
+// ── Badges ─────────────────────────────────────────────────────────
+ion-badge {
+  border-radius: 20px;
+  padding: 4px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.badge-pending   { --background: #f59e0b; color: #000; }
+.badge-progress  { --background: #0ea5e9; color: #fff; }
+.badge-ready     { --background: #10b981; color: #fff; }
+.badge-delivered { --background: #64748b; color: #fff; }
+
+// ── Section Label ──────────────────────────────────────────────────
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--t-subtext);
+  padding: 20px 4px 8px;
+}
+
+// ── Staggered list animation ───────────────────────────────────────
+@for $i from 1 through 20 {
+  ion-item-sliding:nth-child(#{$i}) ion-item,
+  .anim-item:nth-child(#{$i}) {
+    animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) #{$i * 0.05}s both;
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Empty State ────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--t-subtext);
+  text-align: center;
+  animation: pageEnter 0.4s ease both;
+
+  ion-icon { font-size: 64px; margin-bottom: 12px; opacity: 0.3; }
+  p  { font-size: 15px; margin: 0; font-weight: 600; }
+  small { font-size: 13px; opacity: 0.7; margin-top: 4px; display: block; }
+}

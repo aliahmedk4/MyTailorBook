@@ -1,0 +1,93 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ customer?.name }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/add-customer', customerId]">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="customer">
+
+  <!-- Hero Card -->
+  <div class="hero-card">
+    <div class="hero-avatar">{{ customer.name.charAt(0).toUpperCase() }}</div>
+    <div class="hero-info">
+      <h2>{{ customer.name }}</h2>
+      <p><ion-icon name="call-outline"></ion-icon> {{ customer.phone || 'No phone' }}</p>
+    </div>
+    <div class="hero-stats">
+      <div class="h-stat">
+        <span>{{ customer.measurements.length }}</span>
+        <small>Saved</small>
+      </div>
+      <div class="h-stat">
+        <span>{{ orderCount }}</span>
+        <small>Orders</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Section -->
+  <div class="section-label ion-padding-horizontal" *ngIf="orders.length > 0">Current Orders</div>
+  <div class="orders-scroll" *ngIf="orders.length > 0">
+    <div class="order-chip" *ngFor="let o of orders" [routerLink]="['/add-order', customerId, o.id]">
+      <span class="oc-type">{{ o.dressType }}</span>
+      <ion-badge [class]="badgeClass(o.status)">{{ o.status }}</ion-badge>
+      <span class="oc-date" *ngIf="o.dueDate">{{ o.dueDate }}</span>
+    </div>
+  </div>
+
+  <!-- New Order Button -->
+  <div class="ion-padding-horizontal ion-padding-top">
+    <ion-button expand="block" fill="outline" [routerLink]="['/add-order', customerId, 'new']" class="new-order-btn">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      New Order for {{ customer.name }}
+    </ion-button>
+  </div>
+
+  <!-- Measurements Section -->
+  <div class="section-label ion-padding-horizontal">Saved Measurements</div>
+
+  <div class="measurements-list ion-padding-horizontal">
+    <ion-card *ngFor="let m of customer.measurements" class="m-card">
+      <div class="m-card-header">
+        <div class="m-type-badge">{{ m.dressType.charAt(0) }}</div>
+        <div class="m-type-name">{{ m.dressType }}</div>
+        <div class="m-actions">
+          <ion-button fill="clear" size="small" [routerLink]="['/add-measurement', customerId, m.id]">
+            <ion-icon slot="icon-only" name="create-outline" color="primary"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" size="small" (click)="confirmDelete(m)">
+            <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+      <div class="m-grid">
+        <div class="m-field" *ngFor="let entry of getMeasurementEntries(m)">
+          <span class="m-val">{{ entry.value }}"</span>
+          <span class="m-key">{{ entry.label }}</span>
+        </div>
+      </div>
+      <p class="m-notes" *ngIf="m.notes">📝 {{ m.notes }}</p>
+    </ion-card>
+
+    <div *ngIf="customer.measurements.length === 0" class="empty-state">
+      <ion-icon name="shirt-outline"></ion-icon>
+      <p>No measurements saved</p>
+      <small>Tap + to add measurements</small>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button [routerLink]="['/add-measurement', customerId, 'new']">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

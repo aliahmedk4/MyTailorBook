@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
 import { StorageService } from '../services/storage.service';
 import { Customer } from '../models/customer.model';
@@ -9,10 +9,11 @@ import { Customer } from '../models/customer.model';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage {
   customers: Customer[] = [];
   filtered: Customer[] = [];
   searchTerm = '';
+  today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   constructor(
     private storage: StorageService,
@@ -20,11 +21,7 @@ export class HomePage implements OnInit {
     private toastCtrl: ToastController
   ) {}
 
-  ngOnInit() {}
-
-  ionViewWillEnter() {
-    this.load();
-  }
+  ionViewWillEnter() { this.load(); }
 
   load() {
     this.customers = this.storage.getCustomers();
@@ -38,10 +35,22 @@ export class HomePage implements OnInit {
       : [...this.customers];
   }
 
+  totalOrders(): number {
+    return this.storage.getOrders().length;
+  }
+
+  pendingOrders(): number {
+    return this.storage.getOrders().filter(o => o.status === 'Pending').length;
+  }
+
+  getOrderCount(customerId: string): number {
+    return this.storage.getOrdersForCustomer(customerId).length;
+  }
+
   async confirmDelete(customer: Customer) {
     const alert = await this.alertCtrl.create({
       header: 'Delete Customer',
-      message: `Delete ${customer.name}? All measurements will be lost.`,
+      message: `Delete "${customer.name}"? All data will be lost.`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
@@ -58,7 +67,7 @@ export class HomePage implements OnInit {
   }
 
   async showToast(msg: string) {
-    const toast = await this.toastCtrl.create({ message: msg, duration: 2000, position: 'bottom' });
+    const toast = await this.toastCtrl.create({ message: msg, duration: 2000, position: 'bottom', color: 'dark' });
     await toast.present();
   }
 }

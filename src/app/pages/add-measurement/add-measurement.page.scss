@@ -1,0 +1,20 @@
+.form-item {
+  --background: var(--tailor-surface);
+  --border-radius: 12px;
+  --padding-start: 14px;
+  --inner-padding-end: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--tailor-border);
+  border-radius: 12px;
+}
+
+.save-btn {
+  margin-top: 24px;
+  margin-bottom: 32px;
+  --border-radius: 14px;
+  --background: linear-gradient(135deg, #6c63ff, #a78bfa);
+  --box-shadow: 0 6px 20px rgba(108,99,255,0.35);
+  font-weight: 700;
+  font-size: 16px;
+  height: 52px;
+}

@@ -1,0 +1,86 @@
+<ion-header class="backup-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Backup & Restore</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- Hero -->
+  <div class="backup-hero">
+    <div class="hero-icon-wrap">
+      <ion-icon name="cloud-outline"></ion-icon>
+    </div>
+    <h1 class="hero-title">Google Drive Backup</h1>
+    <p class="hero-sub">Your data stays in your own Google account — private & secure</p>
+  </div>
+
+  <div class="backup-body">
+
+    <!-- Account Card -->
+    <div class="section-label">GOOGLE ACCOUNT</div>
+    <div class="info-card" *ngIf="!isSignedIn">
+      <div class="info-card-icon not-signed">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </div>
+      <div class="info-card-text">
+        <p class="info-title">Not signed in</p>
+        <p class="info-sub">Sign in with Google to enable backup</p>
+      </div>
+    </div>
+
+    <div class="info-card signed" *ngIf="isSignedIn">
+      <div class="info-card-icon signed-icon">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+      </div>
+      <div class="info-card-text">
+        <p class="info-title">Google Drive connected</p>
+        <p class="info-sub">Last backup: {{ formatDate(lastBackup) }}</p>
+      </div>
+      <button class="sign-out-btn" (click)="signOut()">Sign out</button>
+    </div>
+
+    <!-- Sign In Button -->
+    <button class="action-btn btn-google" *ngIf="!isSignedIn" (click)="signIn()">
+      <img src="assets/google-logo.svg" class="google-logo" alt="G"/>
+      Sign in with Google
+    </button>
+
+    <!-- Backup & Restore -->
+    <ng-container *ngIf="isSignedIn">
+      <div class="section-label" style="margin-top: 24px;">ACTIONS</div>
+
+      <div class="action-card" (click)="backup()">
+        <div class="action-icon backup-icon">
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+        </div>
+        <div class="action-text">
+          <p class="action-title">Backup Now</p>
+          <p class="action-sub">Save all customers & orders to Drive</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="action-arrow"></ion-icon>
+      </div>
+
+      <div class="action-card danger-card" (click)="restore()">
+        <div class="action-icon restore-icon">
+          <ion-icon name="cloud-download-outline"></ion-icon>
+        </div>
+        <div class="action-text">
+          <p class="action-title">Restore Backup</p>
+          <p class="action-sub">Replace current data with Drive backup</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="action-arrow"></ion-icon>
+      </div>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <p>Backup is stored in your Google Drive's private app folder. Only this app can access it.</p>
+      </div>
+    </ng-container>
+
+  </div>
+</ion-content>

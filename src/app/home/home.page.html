@@ -1,20 +1,131 @@
-<ion-header [translucent]="true">
+<ion-header class="home-header">
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/add-customer/new" fill="clear">
+        <ion-icon slot="icon-only" name="person-add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
+
+  <div class="hero-banner">
+    <div class="hero-text">
+      <p class="hero-greeting">Welcome back 👋</p>
+      <h1 class="hero-title">My Tailor Book</h1>
+      <p class="hero-date">{{ today }}</p>
+    </div>
+    <div class="hero-icon">
+      <ion-icon name="cut-outline"></ion-icon>
+    </div>
+  </div>
+
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-icon-wrap s-blue"><ion-icon name="people"></ion-icon></div>
+      <span class="stat-num">{{ customers.length }}</span>
+      <span class="stat-lbl">Customers</span>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap s-amber"><ion-icon name="receipt"></ion-icon></div>
+      <span class="stat-num">{{ totalOrders() }}</span>
+      <span class="stat-lbl">Orders</span>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap s-teal"><ion-icon name="time-outline"></ion-icon></div>
+      <span class="stat-num">{{ pendingOrders() }}</span>
+      <span class="stat-lbl">Pending</span>
+    </div>
+  </div>
+
+  <!-- Search inside header on gradient -->
+  <div class="header-search">
+    <ion-icon name="search-outline" class="search-icon-left"></ion-icon>
+    <input
+      class="search-native"
+      [(ngModel)]="searchTerm"
+      (input)="applyFilter()"
+      placeholder="Search customers..."
+    />
+    <ion-icon name="close-circle" class="search-clear" *ngIf="searchTerm" (click)="searchTerm=''; applyFilter()"></ion-icon>
+  </div>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+<ion-content>
+  <div class="list-header" *ngIf="filtered.length > 0">
+    <span class="list-title">All Customers</span>
+    <span class="list-count">{{ filtered.length }}</span>
   </div>
+
+  <div class="list-wrap" *ngIf="filtered.length > 0">
+    <ion-item-sliding *ngFor="let customer of filtered; let i = index">
+      <ion-item [routerLink]="['/customer-detail', customer.id]"
+        detail="false" lines="none" class="customer-item">
+
+        <div class="accent-bar" [class]="'accent-' + (i % 4)" slot="start"></div>
+        <div class="avatar" [class]="'av-' + (i % 4)">
+          {{ customer.name.charAt(0).toUpperCase() }}
+        </div>
+
+        <ion-label class="customer-label">
+          <div class="name-row">
+            <h2 class="customer-name">{{ customer.name }}</h2>
+            <span class="order-badge" *ngIf="getOrderCount(customer.id) > 0">
+              {{ getOrderCount(customer.id) }}
+            </span>
+          </div>
+          <p class="customer-phone">
+            <ion-icon name="call-outline"></ion-icon>
+            {{ customer.phone || 'No phone number' }}
+          </p>
+          <div class="bottom-row">
+            <span class="orders-pill">
+              <ion-icon name="receipt-outline"></ion-icon>
+              {{ getOrderCount(customer.id) }} order{{ getOrderCount(customer.id) !== 1 ? 's' : '' }}
+            </span>
+            <span class="measurements-pill">
+              <ion-icon name="body-outline"></ion-icon>
+              {{ customer.measurements.length }} saved
+            </span>
+          </div>
+        </ion-label>
+
+        <ion-icon name="chevron-forward" slot="end" class="chevron-icon"></ion-icon>
+      </ion-item>
+
+      <ion-item-options side="start">
+        <ion-item-option color="primary" [routerLink]="['/add-order', customer.id, 'new']">
+          <ion-icon slot="top" name="add-circle-outline"></ion-icon>
+          Order
+        </ion-item-option>
+      </ion-item-options>
+      <ion-item-options side="end">
+        <ion-item-option color="medium" [routerLink]="['/add-customer', customer.id]">
+          <ion-icon slot="top" name="create-outline"></ion-icon>
+          Edit
+        </ion-item-option>
+        <ion-item-option color="danger" (click)="confirmDelete(customer)">
+          <ion-icon slot="top" name="trash-outline"></ion-icon>
+          Delete
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </div>
+
+  <div *ngIf="filtered.length === 0" class="empty-state">
+    <div class="empty-illustration">✂️</div>
+    <h3>No customers yet</h3>
+    <p>Start by adding your first customer</p>
+    <ion-button routerLink="/add-customer/new" shape="round" class="empty-btn">
+      <ion-icon slot="start" name="person-add-outline"></ion-icon>
+      Add Customer
+    </ion-button>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="main-fab" routerLink="/add-customer/new">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

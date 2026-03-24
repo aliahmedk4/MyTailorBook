@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/customer-detail/' + customerId"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Edit Measurement' : 'Add Measurement' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="save()">
+
+    <div class="section-label">Dress Type</div>
+    <ion-item class="form-item">
+      <ion-label position="stacked">Select Type</ion-label>
+      <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)" interface="action-sheet">
+        <ion-select-option *ngFor="let type of dressTypes" [value]="type">{{ type }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item class="form-item" *ngIf="showCustomInput">
+      <ion-label position="stacked">Custom Name</ion-label>
+      <ion-input formControlName="customDressType" placeholder="e.g. Sherwani, Lehenga..." clearInput></ion-input>
+    </ion-item>
+
+    <div class="section-label">Measurements (inches)</div>
+
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        <ion-col size="6" *ngFor="let field of measurementFields">
+          <ion-item class="form-item">
+            <ion-label position="stacked">{{ field.label }}</ion-label>
+            <ion-input [formControlName]="field.key" type="number" placeholder="0" inputmode="decimal"></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <div class="section-label">Notes</div>
+    <ion-item class="form-item">
+      <ion-textarea formControlName="notes" placeholder="Fabric, fit preference, special instructions..." rows="3" autoGrow></ion-textarea>
+    </ion-item>
+
+    <ion-button expand="block" type="submit" class="save-btn">
+      <ion-icon slot="start" name="{{ isEdit ? 'checkmark-circle-outline' : 'save-outline' }}"></ion-icon>
+      {{ isEdit ? 'Update Measurement' : 'Save Measurement' }}
+    </ion-button>
+  </form>
+</ion-content>

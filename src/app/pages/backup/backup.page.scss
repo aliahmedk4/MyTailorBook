@@ -1,0 +1,191 @@
+$g: linear-gradient(135deg, #0f172a 0%, #0ea5e9 60%, #06b6d4 100%);
+
+.backup-header ion-toolbar {
+  --background: transparent;
+  --border-width: 0;
+  background: $g;
+  --color: #fff;
+  --ion-color-base: #fff;
+  ion-title { color: #fff; font-weight: 800; }
+  ion-menu-button { color: #fff; }
+}
+
+// ── Hero ────────────────────────────────────────────────────────────
+.backup-hero {
+  background: $g;
+  padding: 10px 24px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  .hero-icon-wrap {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    backdrop-filter: blur(10px);
+    animation: heroFloat 4s ease-in-out infinite;
+    ion-icon { font-size: 40px; color: #fff; }
+  }
+
+  .hero-title {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-sub {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5;
+  }
+}
+
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+// ── Body ────────────────────────────────────────────────────────────
+.backup-body {
+  padding: 20px 16px 60px;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: var(--t-subtext);
+  padding: 0 4px 8px;
+}
+
+// ── Info Card ───────────────────────────────────────────────────────
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--t-shadow-sm);
+
+  .info-card-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    ion-icon { font-size: 24px; }
+
+    &.not-signed { background: rgba(100,116,139,0.1); ion-icon { color: #94a3b8; } }
+    &.signed-icon { background: rgba(16,185,129,0.12); ion-icon { color: #10b981; } }
+  }
+
+  .info-card-text {
+    flex: 1;
+    .info-title { margin: 0 0 2px; font-size: 15px; font-weight: 700; color: var(--t-text); }
+    .info-sub   { margin: 0; font-size: 12px; color: var(--t-subtext); }
+  }
+
+  .sign-out-btn {
+    background: rgba(239,68,68,0.1);
+    color: #ef4444;
+    border: none;
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+// ── Google Sign-in Button ───────────────────────────────────────────
+.btn-google {
+  width: 100%;
+  height: 54px;
+  border-radius: 16px;
+  border: 1.5px solid var(--t-border);
+  background: var(--t-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--t-text);
+  cursor: pointer;
+  box-shadow: var(--t-shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 8px;
+
+  .google-logo { width: 22px; height: 22px; }
+  &:active { transform: scale(0.97); }
+}
+
+// ── Action Cards ────────────────────────────────────────────────────
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--t-surface);
+  border: 1px solid var(--t-border);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--t-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:active { transform: scale(0.98); box-shadow: var(--t-shadow-sm); }
+
+  .action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    ion-icon { font-size: 26px; color: #fff; }
+
+    &.backup-icon  { background: linear-gradient(135deg, #0ea5e9, #06b6d4); box-shadow: 0 4px 14px rgba(14,165,233,0.4); }
+    &.restore-icon { background: linear-gradient(135deg, #f59e0b, #fbbf24); box-shadow: 0 4px 14px rgba(245,158,11,0.4); }
+  }
+
+  .action-text {
+    flex: 1;
+    .action-title { margin: 0 0 3px; font-size: 16px; font-weight: 800; color: var(--t-text); }
+    .action-sub   { margin: 0; font-size: 12px; color: var(--t-subtext); }
+  }
+
+  .action-arrow { color: var(--t-border); font-size: 18px; }
+}
+
+// ── Info Box ────────────────────────────────────────────────────────
+.info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(14,165,233,0.08);
+  border: 1px solid rgba(14,165,233,0.2);
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 8px;
+
+  ion-icon { font-size: 18px; color: #0ea5e9; flex-shrink: 0; margin-top: 1px; }
+  p { margin: 0; font-size: 12px; color: var(--t-subtext); line-height: 1.5; }
+}

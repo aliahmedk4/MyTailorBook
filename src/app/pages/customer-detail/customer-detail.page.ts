@@ -1,0 +1,90 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AlertController, ToastController } from '@ionic/angular';
+import { StorageService } from '../../services/storage.service';
+import { Customer } from '../../models/customer.model';
+import { DressMeasurement } from '../../models/dress-measurement.model';
+import { Order, OrderStatus } from '../../models/order.model';
+
+@Component({
+  selector: 'app-customer-detail',
+  templateUrl: './customer-detail.page.html',
+  styleUrls: ['./customer-detail.page.scss'],
+  standalone: false,
+})
+export class CustomerDetailPage implements OnInit {
+  customer: Customer | undefined;
+  customerId = '';
+  orders: Order[] = [];
+  orderCount = 0;
+
+  labelMap: Record<string, string> = {
+    chest: 'Chest', waist: 'Waist', hip: 'Hip',
+    shoulder: 'Shoulder', sleeveLength: 'Sleeve', length: 'Length'
+  };
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private storage: StorageService,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController
+  ) {}
+
+  ngOnInit() {
+    this.customerId = this.route.snapshot.paramMap.get('id') || '';
+  }
+
+  ionViewWillEnter() {
+    this.load();
+  }
+
+  load() {
+    const c = this.storage.getCustomer(this.customerId);
+    if (c) {
+      this.customer = c;
+      this.orders = this.storage.getOrdersForCustomer(this.customerId);
+      this.orderCount = this.orders.length;
+    } else {
+      this.router.navigateByUrl('/home');
+    }
+  }
+
+  getMeasurementEntries(m: DressMeasurement): { label: string; value: string }[] {
+    return Object.entries(m.measurements)
+      .filter(([, v]) => v)
+      .map(([k, v]) => ({ label: this.labelMap[k] || k, value: v as string }));
+  }
+
+  badgeClass(status: OrderStatus): string {
+    const map: Record<OrderStatus, string> = {
+      'Pending': 'badge-pending', 'In Progress': 'badge-progress',
+      'Ready': 'badge-ready', 'Delivered': 'badge-delivered'
+    };
+    return map[status];
+  }
+
+  async confirmDelete(m: DressMeasurement) {
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Measurement',
+      message: `Delete ${m.dressType} measurement?`,
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete', role: 'destructive',
+          handler: () => {
+            this.storage.deleteMeasurement(this.customerId, m.id);
+            this.load();
+            this.showToast('Measurement deleted');
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async showToast(msg: string) {
+    const toast = await this.toastCtrl.create({ message: msg, duration: 2000, position: 'bottom', color: 'dark' });
+    await toast.present();
+  }
+}
