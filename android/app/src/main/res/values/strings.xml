@@ -4,4 +4,5 @@
     <string name="title_activity_main">MyTailorBook</string>
     <string name="package_name">com.ali.mytailorbook</string>
     <string name="custom_url_scheme">com.ali.mytailorbook</string>
+	<string name="server_client_id">698576182522-ca5o3snq3bfopn0b2nibqh5tq08b7tog.apps.googleusercontent.com</string>
 </resources>

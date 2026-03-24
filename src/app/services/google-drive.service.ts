@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 
+const ANDROID_CLIENT_ID = '698576182522-049gdgch1cc0d3tpfkfsceeugmuh4tip.apps.googleusercontent.com';
 const WEB_CLIENT_ID    = '698576182522-ca5o3snq3bfopn0b2nibqh5tq08b7tog.apps.googleusercontent.com';
 const SCOPE            = 'https://www.googleapis.com/auth/drive.appdata';
 const BACKUP_FILENAME  = 'mytailorbook_backup.json';
@@ -62,7 +63,9 @@ export class GoogleDriveService {
   
     // ✅ MUST initialize on native
     GoogleAuth.initialize({
-      clientId: WEB_CLIENT_ID,
+      clientId: Capacitor.isNativePlatform()
+        ? ANDROID_CLIENT_ID
+        : WEB_CLIENT_ID,
       scopes: [SCOPE],
       grantOfflineAccess: true,
     });
