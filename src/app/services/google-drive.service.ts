@@ -106,22 +106,21 @@ export class GoogleDriveService {
 
   // ── Backup ──────────────────────────────────────────────────────
 
-  async backup(data: { customers: any[]; orders: Order[]; dressConfigs: any[]; version: number; backedUpAt: string }): Promise<void> {
-    const token     = await this.signIn();
-    const rootId    = await this.findOrCreateFolder(token, null, DRIVE_FOLDER_NAME);
-    const imagesId  = await this.findOrCreateFolder(token, rootId, IMAGES_FOLDER_NAME);
+  async backup(data: { customers: any[]; orders: Order[]; dressConfigs: any[]; version: number; backedUpAt: string; images?: Record<string, string> }): Promise<void> {
+    const token    = await this.signIn();
+    const rootId   = await this.findOrCreateFolder(token, null, DRIVE_FOLDER_NAME);
+    const imagesId = await this.findOrCreateFolder(token, rootId, IMAGES_FOLDER_NAME);
 
-    // Upload each image that has a local base64 but no fileId yet, or re-upload if changed
+    // Upload each image from the images map, store Drive fileId on the order
+    const imageMap = data.images || {};
     const ordersForJson = await Promise.all(data.orders.map(async order => {
-      const { imageUrl, ...rest } = order;
-      if (!imageUrl) return rest; // no image — just strip the field
-
-      // Upload image to Drive images folder, keyed by order id
-      const fileId = await this.upsertImageFile(token, imagesId, order.id, imageUrl);
-      return { ...rest, imageFileId: fileId }; // store Drive file ID, not base64
+      const dataUrl = imageMap[order.id];
+      if (!dataUrl) return order;
+      const fileId = await this.upsertImageFile(token, imagesId, order.id, dataUrl);
+      return { ...order, imageFileId: fileId };
     }));
 
-    const payload = { ...data, orders: ordersForJson };
+    const payload = { ...data, orders: ordersForJson, images: undefined };
     const blob    = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
 
     await Promise.all([
@@ -132,7 +131,7 @@ export class GoogleDriveService {
 
   // ── Restore ─────────────────────────────────────────────────────
 
-  async restore(): Promise<object | null> {
+  async restore(): Promise<any | null> {
     const token   = await this.signIn();
     const rootId  = await this.findOrCreateFolder(token, null, DRIVE_FOLDER_NAME);
     const visibleFileId = await this.findFileInFolder(token, rootId, BACKUP_FILENAME);
@@ -143,20 +142,18 @@ export class GoogleDriveService {
       this.http.get<object>(`${DRIVE_FILES_URL}/${fileId}?alt=media`, { headers: this.headers(token) })
     );
 
-    // Re-attach images: download each imageFileId back to imageUrl
+    // Download images from Drive back into images map { orderId -> dataUrl }
+    const images: Record<string, string> = {};
     if (data.orders?.length) {
-      data.orders = await Promise.all(data.orders.map(async (order: any) => {
-        if (!order.imageFileId) return order;
+      await Promise.all(data.orders.map(async (order: any) => {
+        if (!order.imageFileId) return;
         try {
-          const imageUrl = await this.downloadImage(token, order.imageFileId);
-          return { ...order, imageUrl };
-        } catch {
-          return order; // image missing on Drive — keep order without image
-        }
+          images[order.id] = await this.downloadImage(token, order.imageFileId);
+        } catch { /* image missing, skip */ }
       }));
     }
 
-    return data;
+    return { ...data, images };
   }
 
   // ── Last Backup Time ────────────────────────────────────────────

@@ -62,8 +62,8 @@ export class AddOrderPage implements OnInit {
     });
 
     if (this.isEdit) {
-      const order = this.storage.getOrder(this.orderId);
-      if (order) {
+      this.storage.getOrderWithImage(this.orderId).then(order => {
+        if (!order) return;
         this.imagePreview = order.imageUrl || null;
         const config = this.dressConfigs.find(c => c.name === order.dressType);
         this.measurementFields = config?.fields || [];
@@ -76,13 +76,10 @@ export class AddOrderPage implements OnInit {
           notes: order.notes || ''
         });
         this.customerId = order.customerId;
-      }
+        if (this.customerId) this.customer = this.storage.getCustomer(this.customerId);
+      });
     } else {
       this.addMeasurementControls(this.measurementFields, {});
-    }
-
-    if (!pickingCustomer && this.customerId) {
-      this.customer = this.storage.getCustomer(this.customerId);
     }
   }
 

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GoogleDriveService } from './services/google-drive.service';
 import { StorageService } from './services/storage.service';
+import { ImageStoreService } from './services/image-store.service';
 
 const LAST_AUTO_BACKUP_KEY = 'last_auto_backup_date';
 
@@ -22,7 +23,7 @@ export class AppComponent implements OnInit {
   dummyResult  = '';
   TOTAL       = 10000;
 
-  constructor(private drive: GoogleDriveService, private storage: StorageService) {}
+  constructor(private drive: GoogleDriveService, private storage: StorageService, private imageStore: ImageStoreService) {}
 
   ngOnInit() { this.scheduleAutoBackup(); }
 
@@ -30,17 +31,19 @@ export class AppComponent implements OnInit {
     this.dummyLoading = true;
     this.dummyResult  = '';
 
-    const customers  = this.storage.getCustomers();
+    const customers = this.storage.getCustomers();
     if (!customers.length) { this.dummyResult = 'No customers found.'; this.dummyLoading = false; return; }
 
-    const statuses: any[]  = ['Pending', 'In Progress', 'Ready', 'Delivered'];
-    const dressTypes       = ['Shirt', 'Pant', 'Blouse', 'Suit', 'Kurta'];
-    const rand = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+    const statuses: any[] = ['Pending', 'In Progress', 'Ready', 'Delivered'];
+    const dressTypes      = ['Shirt', 'Pant', 'Blouse', 'Suit', 'Kurta'];
+    const rand    = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
     const randNum = (min: number, max: number) => (Math.random() * (max - min) + min).toFixed(1);
+    const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-    // Generate in chunks to avoid blocking the UI thread
-    const CHUNK  = 100;
-    let created  = 0;
+    const CHUNK = 200;
+    let created = 0;
+    // Read index once upfront — we'll append to it in bulk
+    const index: string[] = JSON.parse(localStorage.getItem('tailor_orders_index') || '[]');
 
     const processChunk = () => {
       const end = Math.min(created + CHUNK, this.TOTAL);
@@ -48,32 +51,37 @@ export class AppComponent implements OnInit {
         const customer  = rand(customers);
         const dressType = rand(dressTypes);
         const due = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000);
-        this.storage.addOrder({
-          customerId:   customer.id,
-          customerName: customer.name,
-          dressType,
-          quantity:     Math.ceil(Math.random() * 3),
-          price:        String(Math.floor(Math.random() * 4000) + 500),
-          dueDate:      due.toISOString().split('T')[0],
-          status:       rand(statuses),
+        const id  = genId();
+        const order = {
+          id, customerId: customer.id, customerName: customer.name, dressType,
+          quantity: Math.ceil(Math.random() * 3),
+          price: String(Math.floor(Math.random() * 4000) + 500),
+          dueDate: due.toISOString().split('T')[0],
+          status: rand(statuses),
           measurements: {
             chest: randNum(34, 46), waist: randNum(28, 42),
-            hip:   randNum(34, 48), shoulder: randNum(14, 20),
+            hip: randNum(34, 48), shoulder: randNum(14, 20),
             sleeveLength: randNum(22, 28), length: randNum(28, 44),
           },
-          notes: '',
-        });
+          notes: '', createdAt: new Date().toISOString()
+        };
+        // Write order record directly — bypass addOrder to avoid per-call index writes
+        localStorage.setItem('order_' + id, JSON.stringify(order));
+        index.unshift(id);
       }
       created = end;
 
       if (created < this.TOTAL) {
-        setTimeout(processChunk, 0); // yield to browser between chunks
+        // Flush index every chunk so progress is saved
+        localStorage.setItem('tailor_orders_index', JSON.stringify(index));
+        setTimeout(processChunk, 0);
       } else {
+        localStorage.setItem('tailor_orders_index', JSON.stringify(index));
         const jsonSize = new Blob([JSON.stringify({
+          orders: index.length,
           customers: this.storage.getCustomers(),
-          orders:    this.storage.getOrders(),
         })]).size;
-        this.dummyResult  = `✅ ${this.TOTAL} orders added. JSON size: ${(jsonSize / 1024).toFixed(1)} KB`;
+        this.dummyResult  = `✅ ${this.TOTAL} orders added (total: ${index.length}). Index size: ${(jsonSize / 1024).toFixed(1)} KB`;
         this.dummyLoading = false;
       }
     };
@@ -82,10 +90,11 @@ export class AppComponent implements OnInit {
   }
 
   clearDummyOrders() {
-    const orders  = this.storage.getOrders();
-    const kept    = orders.filter(o => !o.notes?.includes('') || o.imageUrl); // keep real ones with images
-    // simpler: just wipe all orders for test purposes
-    localStorage.removeItem('tailor_orders');
+    // Remove every order_* key and reset the index
+    const index: string[] = JSON.parse(localStorage.getItem('tailor_orders_index') || '[]');
+    index.forEach(id => localStorage.removeItem('order_' + id));
+    localStorage.removeItem('tailor_orders_index');
+    localStorage.removeItem('tailor_orders'); // legacy key
     this.dummyResult = '🗑️ All orders cleared.';
   }
 
@@ -118,12 +127,14 @@ export class AppComponent implements OnInit {
     const todayStr = new Date().toDateString();
     if (localStorage.getItem(LAST_AUTO_BACKUP_KEY) === todayStr) return;
     try {
+      const images = await this.imageStore.getAll();
       await this.drive.backup({
         version: 1,
         backedUpAt: new Date().toISOString(),
         customers: this.storage.getCustomers(),
         orders: this.storage.getOrders(),
         dressConfigs: this.storage.getDressConfigs(),
+        images,
       });
       localStorage.setItem(LAST_AUTO_BACKUP_KEY, todayStr);
     } catch { /* silent fail */ }

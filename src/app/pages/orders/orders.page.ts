@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { AlertController, IonInfiniteScroll, ToastController } from '@ionic/angular';
 import { StorageService } from '../../services/storage.service';
+import { ImageStoreService } from '../../services/image-store.service';
 import { Order, OrderStatus } from '../../models/order.model';
 
 const PAGE_SIZE = 20;
@@ -29,6 +30,7 @@ export class OrdersPage {
 
   constructor(
     private storage: StorageService,
+    private imageStore: ImageStoreService,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController
   ) {}
@@ -76,11 +78,17 @@ export class OrdersPage {
   private appendPage() {
     const start = this.page * PAGE_SIZE;
     const slice = this.masterList.slice(start, start + PAGE_SIZE);
+    // Push orders first, then lazily attach images from IndexedDB
     this.displayed.push(...slice);
+    slice.forEach(order => {
+      this.imageStore.get(order.id).then(url => {
+        if (!url) return;
+        const target = this.displayed.find(o => o.id === order.id);
+        if (target) target.imageUrl = url;
+      });
+    });
     this.page++;
-    if (this.displayed.length >= this.masterList.length) {
-      this.allLoaded = true;
-    }
+    if (this.displayed.length >= this.masterList.length) this.allLoaded = true;
   }
 
   // ── Infinite scroll handler ─────────────────────────────────────

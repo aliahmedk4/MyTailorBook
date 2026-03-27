@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleDriveService } from '../../services/google-drive.service';
 import { StorageService } from '../../services/storage.service';
+import { ImageStoreService } from '../../services/image-store.service';
 
 @Component({
   selector: 'app-backup',
@@ -17,6 +18,7 @@ export class BackupPage implements OnInit {
   constructor(
     private drive: GoogleDriveService,
     private storage: StorageService,
+    private imageStore: ImageStoreService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController
@@ -54,12 +56,14 @@ export class BackupPage implements OnInit {
     const loading = await this.loadingCtrl.create({ message: 'Backing up… uploading images', spinner: 'crescent' });
     await loading.present();
     try {
+      const images = await this.imageStore.getAll();
       const data = {
         version: 1,
         backedUpAt: new Date().toISOString(),
         customers: this.storage.getCustomers(),
         orders: this.storage.getOrders(),
         dressConfigs: this.storage.getDressConfigs(),
+        images,
       };
       await this.drive.backup(data);
       await this.loadLastBackupTime();
@@ -87,7 +91,7 @@ export class BackupPage implements OnInit {
     try {
       const data: any = await this.drive.restore();
       if (!data) { this.showToast('No backup found on Google Drive.', 'warning'); return; }
-      this.storage.importData(data.customers || [], data.orders || [], data.dressConfigs || []);
+      await this.storage.importData(data.customers || [], data.orders || [], data.dressConfigs || [], data.images || {});
       this.showToast('✅ Data restored successfully!', 'success');
     } catch (e: any) {
       this.showToast(e.message || 'Restore failed', 'danger');
