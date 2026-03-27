@@ -12,12 +12,12 @@
 
     <!-- Image Picker -->
     <div class="image-section">
-      <div class="image-preview-wrap" (click)="imgInput.click()">
+      <div class="image-preview-wrap" (click)="pickImage()">
         <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img" alt="order"/>
         <div *ngIf="!imagePreview" class="image-placeholder">
           <ion-icon name="camera-outline"></ion-icon>
           <span>Add Photo</span>
-          <small>Tap to upload dress image</small>
+          <small>Tap to take or choose image</small>
         </div>
         <div *ngIf="imagePreview" class="image-overlay">
           <ion-icon name="camera-outline"></ion-icon>
@@ -28,7 +28,6 @@
         class="remove-img-btn" (click)="removeImage()">
         <ion-icon slot="start" name="trash-outline"></ion-icon> Remove
       </ion-button>
-        <input #imgInput type="file" accept="image/*" hidden (change)="onImagePicked($event)"/>
     </div>
 
     <!-- Measure Estimate Prompt -->
@@ -87,18 +86,12 @@
       <!-- Dress Details -->
       <div class="field-group-label">Dress Details</div>
       <div class="form-card">
-        <ion-item lines="inset" class="form-item">
+        <ion-item lines="none" class="form-item">
           <ion-icon name="shirt-outline" slot="start" class="field-icon"></ion-icon>
           <ion-label position="stacked">Dress Type <span class="req">*</span></ion-label>
           <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)" interface="action-sheet">
-            <ion-select-option *ngFor="let t of dressTypes" [value]="t">{{ t }}</ion-select-option>
+            <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
           </ion-select>
-        </ion-item>
-
-        <ion-item lines="none" class="form-item" *ngIf="showCustomDress">
-          <ion-icon name="create-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-label position="stacked">Custom Name</ion-label>
-          <ion-input formControlName="customDressType" placeholder="e.g. Sherwani, Lehenga..." clearInput></ion-input>
         </ion-item>
       </div>
 
@@ -144,7 +137,7 @@
         Measurements (inches)
         <span class="autofill-hint" *ngIf="customer">· auto-filled if saved</span>
       </div>
-      <div class="form-card measurements-card">
+      <div class="form-card measurements-card" *ngIf="measurementFields.length > 0">
         <ion-grid class="ion-no-padding">
           <ion-row>
             <ion-col size="4" *ngFor="let f of measurementFields">
@@ -156,6 +149,9 @@
             </ion-col>
           </ion-row>
         </ion-grid>
+      </div>
+      <div class="form-card" *ngIf="measurementFields.length === 0">
+        <p class="no-fields-hint">No measurement fields for this dress type. Add them in Settings.</p>
       </div>
 
       <!-- Notes -->

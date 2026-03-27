@@ -103,10 +103,6 @@ ion-menu {
   }
 
   .menu-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
     padding: 16px;
 
     .footer-card {
@@ -140,6 +136,31 @@ ion-menu {
         margin: 0;
         font-size: 11px;
         color: rgba(255,255,255,0.25);
+      }
+    }
+
+    .dev-panel {
+      margin-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      .dev-label {
+        margin: 0 0 4px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: rgba(255,200,0,0.5);
+        text-transform: uppercase;
+      }
+
+      .dev-result {
+        margin: 4px 0 0;
+        font-size: 11px;
+        color: rgba(255,255,255,0.45);
+        word-break: break-word;
       }
     }
   }

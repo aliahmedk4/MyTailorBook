@@ -31,7 +31,10 @@ export class HomePage {
   applyFilter() {
     const term = this.searchTerm.toLowerCase();
     this.filtered = term
-      ? this.customers.filter(c => c.name.toLowerCase().includes(term))
+      ? this.customers.filter(c =>
+          c.name.toLowerCase().includes(term) ||
+          (c.phone || '').toLowerCase().includes(term)
+        )
       : [...this.customers];
   }
 

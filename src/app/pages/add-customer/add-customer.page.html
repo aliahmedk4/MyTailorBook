@@ -11,22 +11,40 @@
   <form [formGroup]="form" (ngSubmit)="save()">
 
     <div class="form-hero">
-      <div class="form-avatar">{{ form.value.name ? form.value.name.charAt(0).toUpperCase() : '?' }}</div>
+      <div class="form-avatar">{{ displayName ? displayName.charAt(0).toUpperCase() : '?' }}</div>
+      <p class="form-avatar-name">{{ displayName || 'New Customer' }}</p>
     </div>
 
-    <div class="section-label">Customer Info</div>
+    <div class="section-label">Name</div>
 
-    <ion-item class="form-item">
-      <ion-label position="stacked">Full Name <span class="req">*</span></ion-label>
-      <ion-input formControlName="name" placeholder="e.g. Ahmed Khan" clearInput></ion-input>
-    </ion-item>
-    <ion-note color="danger" class="err-note" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
-      Name is required
+    <div class="name-row-fields">
+      <ion-item class="form-item">
+        <ion-label position="stacked">First Name <span class="req">*</span></ion-label>
+        <ion-input formControlName="firstName" placeholder="e.g. Ahmed" clearInput></ion-input>
+      </ion-item>
+      <ion-item class="form-item">
+        <ion-label position="stacked">Last Name</ion-label>
+        <ion-input formControlName="lastName" placeholder="e.g. Khan" clearInput></ion-input>
+      </ion-item>
+    </div>
+    <ion-note color="danger" class="err-note" *ngIf="form.get('firstName')?.invalid && form.get('firstName')?.touched">
+      First name is required
     </ion-note>
 
+    <div class="section-label">Contact</div>
+
     <ion-item class="form-item">
+      <ion-icon name="call-outline" slot="start" class="field-icon"></ion-icon>
       <ion-label position="stacked">Phone Number</ion-label>
       <ion-input formControlName="phone" type="tel" placeholder="e.g. 0300-1234567" clearInput></ion-input>
+    </ion-item>
+
+    <div class="section-label">Address</div>
+
+    <ion-item class="form-item">
+      <ion-icon name="location-outline" slot="start" class="field-icon"></ion-icon>
+      <ion-label position="stacked">Address</ion-label>
+      <ion-textarea formControlName="address" placeholder="Street, City..." rows="2" autoGrow></ion-textarea>
     </ion-item>
 
     <ion-button expand="block" type="submit" class="save-btn" [disabled]="form.invalid">

@@ -46,7 +46,7 @@
       class="search-native"
       [(ngModel)]="searchTerm"
       (input)="applyFilter()"
-      placeholder="Search customers..."
+      placeholder="Search by name or phone..."
     />
     <ion-icon name="close-circle" class="search-clear" *ngIf="searchTerm" (click)="searchTerm=''; applyFilter()"></ion-icon>
   </div>
@@ -78,6 +78,10 @@
           <p class="customer-phone">
             <ion-icon name="call-outline"></ion-icon>
             {{ customer.phone || 'No phone number' }}
+          </p>
+          <p class="customer-address" *ngIf="customer.address">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ customer.address }}
           </p>
           <div class="bottom-row">
             <span class="orders-pill">
