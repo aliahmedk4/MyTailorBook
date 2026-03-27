@@ -1,11 +1,4 @@
-export interface Measurements {
-  chest?: string;
-  waist?: string;
-  hip?: string;
-  shoulder?: string;
-  sleeveLength?: string;
-  length?: string;
-}
+export type Measurements = Record<string, string>;
 
 export interface DressMeasurement {
   id: string;

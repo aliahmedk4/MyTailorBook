@@ -9,10 +9,8 @@ const routes: Routes = [
   { path: 'add-measurement/:customerId/:measurementId', loadChildren: () => import('./pages/add-measurement/add-measurement.module').then(m => m.AddMeasurementPageModule) },
   { path: 'add-order/:customerId/:orderId', loadChildren: () => import('./pages/add-order/add-order.module').then(m => m.AddOrderPageModule) },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-  {
-    path: 'backup',
-    loadChildren: () => import('./pages/backup/backup.module').then( m => m.BackupPageModule)
-  },
+  { path: 'backup', loadChildren: () => import('./pages/backup/backup.module').then( m => m.BackupPageModule) },
+  { path: 'settings', loadChildren: () => import('./pages/settings/settings.module').then(m => m.SettingsPageModule) },
 ];
 
 @NgModule({

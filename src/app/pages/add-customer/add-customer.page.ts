@@ -27,24 +27,41 @@ export class AddCustomerPage implements OnInit {
     this.isEdit = this.customerId !== 'new';
 
     this.form = this.fb.group({
-      name: ['', Validators.required],
-      phone: ['']
+      firstName: ['', Validators.required],
+      lastName:  [''],
+      phone:     [''],
+      address:   [''],
     });
 
     if (this.isEdit) {
       const c = this.storage.getCustomer(this.customerId);
-      if (c) this.form.patchValue({ name: c.name, phone: c.phone });
+      if (c) this.form.patchValue({
+        firstName: c.firstName || c.name,
+        lastName:  c.lastName  || '',
+        phone:     c.phone     || '',
+        address:   c.address   || '',
+      });
     }
+  }
+
+  get displayName(): string {
+    const f = this.form.value.firstName?.trim() || '';
+    const l = this.form.value.lastName?.trim()  || '';
+    return l ? `${f} ${l}` : f;
   }
 
   async save() {
     if (this.form.invalid) return;
-    const { name, phone } = this.form.value;
+    const { firstName, lastName, phone, address } = this.form.value;
+    const name = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+    const data = { name, firstName: firstName.trim(), lastName: lastName.trim(), phone, address };
+
     if (this.isEdit) {
-      this.storage.updateCustomer(this.customerId, name, phone);
+      this.storage.updateCustomer(this.customerId, data);
     } else {
-      this.storage.addCustomer(name, phone);
+      this.storage.addCustomer(data);
     }
+
     const toast = await this.toastCtrl.create({
       message: this.isEdit ? 'Customer updated!' : 'Customer added!',
       duration: 2000, position: 'bottom'

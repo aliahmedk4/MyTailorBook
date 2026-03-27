@@ -43,7 +43,6 @@
     </div>
   </div>
 
-  <!-- Search INSIDE header so it sits on gradient -->
   <div class="header-search">
     <ion-icon name="search-outline" class="search-icon-left"></ion-icon>
     <input
@@ -57,8 +56,19 @@
 </ion-header>
 
 <ion-content>
-  <div class="orders-list" *ngIf="filtered.length > 0">
-    <ion-item-sliding *ngFor="let order of filtered; let i = index">
+
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="reload($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="orders-list" *ngIf="displayed.length > 0">
+    <ion-item-sliding *ngFor="let order of displayed; let i = index">
 
       <ion-item lines="none" class="order-card"
         [routerLink]="['/add-order', order.customerId, order.id]" detail="false">
@@ -108,15 +118,24 @@
     </ion-item-sliding>
   </div>
 
-  <div *ngIf="filtered.length === 0" class="empty-state">
+  <div *ngIf="displayed.length === 0" class="empty-state">
     <div class="empty-emoji">📋</div>
     <h3>No orders found</h3>
     <p>Tap + to create a new order</p>
   </div>
+
+  <!-- Infinite scroll -->
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      loadingText="Loading more orders...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button routerLink="/add-order/pick/new" class="main-fab">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
 </ion-content>

@@ -14,18 +14,13 @@
     <ion-item class="form-item">
       <ion-label position="stacked">Select Type</ion-label>
       <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)" interface="action-sheet">
-        <ion-select-option *ngFor="let type of dressTypes" [value]="type">{{ type }}</ion-select-option>
+        <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
       </ion-select>
-    </ion-item>
-
-    <ion-item class="form-item" *ngIf="showCustomInput">
-      <ion-label position="stacked">Custom Name</ion-label>
-      <ion-input formControlName="customDressType" placeholder="e.g. Sherwani, Lehenga..." clearInput></ion-input>
     </ion-item>
 
     <div class="section-label">Measurements (inches)</div>
 
-    <ion-grid class="ion-no-padding">
+    <ion-grid class="ion-no-padding" *ngIf="measurementFields.length > 0">
       <ion-row>
         <ion-col size="6" *ngFor="let field of measurementFields">
           <ion-item class="form-item">
@@ -35,6 +30,10 @@
         </ion-col>
       </ion-row>
     </ion-grid>
+
+    <p class="no-fields-hint" *ngIf="measurementFields.length === 0">
+      No fields for this dress type. Add them in Settings.
+    </p>
 
     <div class="section-label">Notes</div>
     <ion-item class="form-item">

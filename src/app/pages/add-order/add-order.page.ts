@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { ActionSheetController, ToastController } from '@ionic/angular';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { StorageService } from '../../services/storage.service';
 import { Customer } from '../../models/customer.model';
 import { OrderStatus } from '../../models/order.model';
-
-const DRESS_TYPES = ['Shirt', 'Pant', 'Blouse', 'Suit', 'Kurta', 'Custom'];
+import { DressConfig, MeasurementField } from '../../models/dress-config.model';
 
 @Component({
   selector: 'app-add-order',
@@ -16,9 +16,8 @@ const DRESS_TYPES = ['Shirt', 'Pant', 'Blouse', 'Suit', 'Kurta', 'Custom'];
 })
 export class AddOrderPage implements OnInit {
   form!: FormGroup;
-  dressTypes = DRESS_TYPES;
+  dressConfigs: DressConfig[] = [];
   statuses: OrderStatus[] = ['Pending', 'In Progress', 'Ready', 'Delivered'];
-  showCustomDress = false;
   isEdit = false;
   customerId = '';
   orderId = '';
@@ -29,19 +28,15 @@ export class AddOrderPage implements OnInit {
   promptHeight = '';
   promptWeight = '';
   promptGender: 'male' | 'female' = 'male';
-
-  measurementFields = [
-    { key: 'chest', label: 'Chest' }, { key: 'waist', label: 'Waist' },
-    { key: 'hip', label: 'Hip' }, { key: 'shoulder', label: 'Shoulder' },
-    { key: 'sleeveLength', label: 'Sleeve' }, { key: 'length', label: 'Length' },
-  ];
+  measurementFields: MeasurementField[] = [];
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private storage: StorageService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private actionSheetCtrl: ActionSheetController
   ) {}
 
   ngOnInit() {
@@ -51,41 +46,51 @@ export class AddOrderPage implements OnInit {
     const pickingCustomer = this.customerId === 'pick';
 
     this.customers = this.storage.getCustomers();
+    this.dressConfigs = this.storage.getDressConfigs();
+
+    const firstType = this.dressConfigs[0]?.name || '';
+    this.measurementFields = this.dressConfigs[0]?.fields || [];
 
     this.form = this.fb.group({
       customerId: [pickingCustomer ? '' : this.customerId, Validators.required],
-      dressType: ['Shirt', Validators.required],
-      customDressType: [''],
+      dressType: [firstType, Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
       price: [''],
       dueDate: [''],
       status: ['Pending', Validators.required],
-      chest: [''], waist: [''], hip: [''],
-      shoulder: [''], sleeveLength: [''], length: [''],
       notes: ['']
     });
 
     if (this.isEdit) {
       const order = this.storage.getOrder(this.orderId);
       if (order) {
-        const isCustom = !DRESS_TYPES.includes(order.dressType);
-        this.showCustomDress = isCustom;
         this.imagePreview = order.imageUrl || null;
+        const config = this.dressConfigs.find(c => c.name === order.dressType);
+        this.measurementFields = config?.fields || [];
+        this.addMeasurementControls(this.measurementFields, order.measurements);
         this.form.patchValue({
           customerId: order.customerId,
-          dressType: isCustom ? 'Custom' : order.dressType,
-          customDressType: isCustom ? order.dressType : '',
+          dressType: order.dressType,
           quantity: order.quantity, price: order.price || '',
           dueDate: order.dueDate || '', status: order.status,
-          ...order.measurements, notes: order.notes || ''
+          notes: order.notes || ''
         });
         this.customerId = order.customerId;
       }
+    } else {
+      this.addMeasurementControls(this.measurementFields, {});
     }
 
     if (!pickingCustomer && this.customerId) {
       this.customer = this.storage.getCustomer(this.customerId);
     }
+  }
+
+  private addMeasurementControls(fields: MeasurementField[], values: Record<string, string>) {
+    // Remove old measurement controls
+    const keep = ['customerId', 'dressType', 'quantity', 'price', 'dueDate', 'status', 'notes'];
+    Object.keys(this.form.controls).forEach(k => { if (!keep.includes(k)) this.form.removeControl(k); });
+    fields.forEach(f => this.form.addControl(f.key, this.fb.control(values[f.key] || '')));
   }
 
   onCustomerChange(event: any) {
@@ -95,7 +100,9 @@ export class AddOrderPage implements OnInit {
   }
 
   onDressTypeChange(event: any) {
-    this.showCustomDress = event.detail.value === 'Custom';
+    const config = this.dressConfigs.find(c => c.name === event.detail.value);
+    this.measurementFields = config?.fields || [];
+    this.addMeasurementControls(this.measurementFields, {});
     this.prefillFromMeasurements();
   }
 
@@ -105,53 +112,89 @@ export class AddOrderPage implements OnInit {
     if (match) this.form.patchValue({ ...match.measurements });
   }
 
-  onImagePicked(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result as string;
+  async pickImage() {
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Add Photo',
+      buttons: [
+        { text: 'Take Photo', icon: 'camera-outline', handler: () => this.captureImage(CameraSource.Camera) },
+        { text: 'Choose from Gallery', icon: 'image-outline', handler: () => this.captureImage(CameraSource.Photos) },
+        { text: 'Cancel', role: 'cancel' }
+      ]
+    });
+    await sheet.present();
+  }
+
+  private async captureImage(source: CameraSource) {
+    try {
+      const photo = await Camera.getPhoto({ resultType: CameraResultType.DataUrl, source, quality: 70, width: 1024 });
+      this.imagePreview = await this.compressImage(photo.dataUrl!);
       this.showMeasurePrompt = true;
-    };
-    reader.readAsDataURL(file);
+    } catch { /* user cancelled */ }
+  }
+
+  private compressImage(dataUrl: string): Promise<string> {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        const MAX = 1200;
+        if (width > MAX || height > MAX) {
+          const ratio = Math.min(MAX / width, MAX / height);
+          width = Math.round(width * ratio); height = Math.round(height * ratio);
+        }
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+        let quality = 0.7;
+        let result = canvas.toDataURL('image/jpeg', quality);
+        while (result.length > 300 * 1024 * 1.37 && quality > 0.1) {
+          quality -= 0.1;
+          result = canvas.toDataURL('image/jpeg', quality);
+        }
+        resolve(result);
+      };
+      img.src = dataUrl;
+    });
   }
 
   removeImage() { this.imagePreview = null; }
-
   dismissPrompt() { this.showMeasurePrompt = false; }
 
   applyEstimate() {
     const h = parseFloat(this.promptHeight);
     const w = parseFloat(this.promptWeight);
     if (!h || !w) { this.showMeasurePrompt = false; return; }
-
-    // Standard body proportion formulas (inches)
     const isMale = this.promptGender === 'male';
     const bmi = w / ((h / 100) * (h / 100));
-    const chest     = +(h * (isMale ? 0.305 : 0.295) + (bmi - 22) * 0.6).toFixed(1);
-    const waist     = +(h * (isMale ? 0.245 : 0.235) + (bmi - 22) * 0.7).toFixed(1);
-    const hip       = +(h * (isMale ? 0.300 : 0.320) + (bmi - 22) * 0.55).toFixed(1);
-    const shoulder  = +(h * 0.238 + (isMale ? 1 : -0.5)).toFixed(1);
-    const sleeve    = +(h * 0.345).toFixed(1);
-    const length    = +(h * (isMale ? 0.445 : 0.420)).toFixed(1);
-
-    this.form.patchValue({ chest, waist, hip, shoulder, sleeveLength: sleeve, length });
+    const estimates: Record<string, string> = {
+      chest:         (h * (isMale ? 0.305 : 0.295) + (bmi - 22) * 0.6).toFixed(1),
+      waist:         (h * (isMale ? 0.245 : 0.235) + (bmi - 22) * 0.7).toFixed(1),
+      hip:           (h * (isMale ? 0.300 : 0.320) + (bmi - 22) * 0.55).toFixed(1),
+      shoulder:      (h * 0.238 + (isMale ? 1 : -0.5)).toFixed(1),
+      sleeveLength:  (h * 0.345).toFixed(1),
+      length:        (h * (isMale ? 0.445 : 0.420)).toFixed(1),
+    };
+    // Only patch fields that exist in current form
+    const patch: Record<string, string> = {};
+    this.measurementFields.forEach(f => { if (estimates[f.key]) patch[f.key] = estimates[f.key]; });
+    this.form.patchValue(patch);
     this.showMeasurePrompt = false;
   }
 
   async save() {
     if (this.form.invalid) return;
     const v = this.form.value;
-    const dressType = v.dressType === 'Custom' ? (v.customDressType || 'Custom') : v.dressType;
     const selectedCustomer = this.storage.getCustomer(v.customerId);
+    const measurements: Record<string, string> = {};
+    this.measurementFields.forEach(f => { measurements[f.key] = v[f.key] || ''; });
 
     const payload = {
       customerId: v.customerId,
       customerName: selectedCustomer?.name || '',
-      dressType, quantity: v.quantity, price: v.price,
+      dressType: v.dressType,
+      quantity: v.quantity, price: v.price,
       dueDate: v.dueDate, status: v.status as OrderStatus,
-      measurements: { chest: v.chest, waist: v.waist, hip: v.hip, shoulder: v.shoulder, sleeveLength: v.sleeveLength, length: v.length },
-      notes: v.notes,
+      measurements, notes: v.notes,
       imageUrl: this.imagePreview || undefined
     };
 

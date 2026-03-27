@@ -10,7 +10,7 @@ $g: linear-gradient(135deg, #0f172a 0%, #0ea5e9 60%, #06b6d4 100%);
 // ── Hero ───────────────────────────────────────────────────────────
 .hero-banner {
   background: $g;
-  padding: 0 20px 20px;
+  padding: 15px 0px 20px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -285,8 +285,23 @@ $g: linear-gradient(135deg, #0f172a 0%, #0ea5e9 60%, #06b6d4 100%);
   display: flex !important;
   align-items: center;
   gap: 4px;
-  margin: 0 0 8px !important;
+  margin: 0 0 4px !important;
   ion-icon { font-size: 11px; }
+}
+
+.customer-address {
+  font-size: 11px !important;
+  color: var(--t-subtext) !important;
+  display: flex !important;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0 0 8px !important;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  ion-icon { font-size: 11px; flex-shrink: 0; margin-top: 1px; }
 }
 
 .bottom-row { display: flex; gap: 6px; flex-wrap: wrap; }

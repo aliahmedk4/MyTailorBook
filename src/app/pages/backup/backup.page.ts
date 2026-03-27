@@ -51,7 +51,7 @@ export class BackupPage implements OnInit {
   }
 
   async backup() {
-    const loading = await this.loadingCtrl.create({ message: 'Backing up to Google Drive…', spinner: 'crescent' });
+    const loading = await this.loadingCtrl.create({ message: 'Backing up… uploading images', spinner: 'crescent' });
     await loading.present();
     try {
       const data = {
@@ -59,6 +59,7 @@ export class BackupPage implements OnInit {
         backedUpAt: new Date().toISOString(),
         customers: this.storage.getCustomers(),
         orders: this.storage.getOrders(),
+        dressConfigs: this.storage.getDressConfigs(),
       };
       await this.drive.backup(data);
       await this.loadLastBackupTime();
@@ -86,7 +87,7 @@ export class BackupPage implements OnInit {
     try {
       const data: any = await this.drive.restore();
       if (!data) { this.showToast('No backup found on Google Drive.', 'warning'); return; }
-      this.storage.importData(data.customers || [], data.orders || []);
+      this.storage.importData(data.customers || [], data.orders || [], data.dressConfigs || []);
       this.showToast('✅ Data restored successfully!', 'success');
     } catch (e: any) {
       this.showToast(e.message || 'Restore failed', 'danger');

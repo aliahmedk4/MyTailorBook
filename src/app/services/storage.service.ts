@@ -2,9 +2,38 @@ import { Injectable } from '@angular/core';
 import { Customer } from '../models/customer.model';
 import { DressMeasurement } from '../models/dress-measurement.model';
 import { Order, OrderStatus } from '../models/order.model';
+import { DressConfig, MeasurementField } from '../models/dress-config.model';
 
 const CUSTOMERS_KEY = 'tailor_customers';
 const ORDERS_KEY = 'tailor_orders';
+const DRESS_CONFIGS_KEY = 'tailor_dress_configs';
+
+const DEFAULT_DRESS_CONFIGS: DressConfig[] = [
+  { id: 'dc_shirt',  name: 'Shirt',  isDefault: true, fields: [
+    { key: 'chest', label: 'Chest' }, { key: 'waist', label: 'Waist' },
+    { key: 'shoulder', label: 'Shoulder' }, { key: 'sleeveLength', label: 'Sleeve Length' },
+    { key: 'length', label: 'Length' }
+  ]},
+  { id: 'dc_pant',   name: 'Pant',   isDefault: true, fields: [
+    { key: 'waist', label: 'Waist' }, { key: 'hip', label: 'Hip' },
+    { key: 'thigh', label: 'Thigh' }, { key: 'length', label: 'Length' }
+  ]},
+  { id: 'dc_blouse', name: 'Blouse', isDefault: true, fields: [
+    { key: 'chest', label: 'Chest' }, { key: 'waist', label: 'Waist' },
+    { key: 'shoulder', label: 'Shoulder' }, { key: 'sleeveLength', label: 'Sleeve Length' },
+    { key: 'length', label: 'Length' }
+  ]},
+  { id: 'dc_suit',   name: 'Suit',   isDefault: true, fields: [
+    { key: 'chest', label: 'Chest' }, { key: 'waist', label: 'Waist' },
+    { key: 'hip', label: 'Hip' }, { key: 'shoulder', label: 'Shoulder' },
+    { key: 'sleeveLength', label: 'Sleeve Length' }, { key: 'length', label: 'Length' }
+  ]},
+  { id: 'dc_kurta',  name: 'Kurta',  isDefault: true, fields: [
+    { key: 'chest', label: 'Chest' }, { key: 'waist', label: 'Waist' },
+    { key: 'shoulder', label: 'Shoulder' }, { key: 'sleeveLength', label: 'Sleeve Length' },
+    { key: 'length', label: 'Length' }, { key: 'hip', label: 'Hip' }
+  ]},
+];
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
@@ -29,18 +58,18 @@ export class StorageService {
     return this.getCustomers().find(c => c.id === id);
   }
 
-  addCustomer(name: string, phone: string): Customer {
+  addCustomer(data: Omit<Customer, 'id' | 'measurements'>): Customer {
     const customers = this.getCustomers();
-    const customer: Customer = { id: this.genId(), name, phone, measurements: [] };
+    const customer: Customer = { ...data, id: this.genId(), measurements: [] };
     customers.push(customer);
     this.saveCustomers(customers);
     return customer;
   }
 
-  updateCustomer(id: string, name: string, phone: string): void {
+  updateCustomer(id: string, data: Omit<Customer, 'id' | 'measurements'>): void {
     const customers = this.getCustomers();
     const c = customers.find(x => x.id === id);
-    if (c) { c.name = name; c.phone = phone; }
+    if (c) Object.assign(c, data);
     this.saveCustomers(customers);
   }
 
@@ -122,10 +151,45 @@ export class StorageService {
 
   // ── Import (Restore) ───────────────────────────────────────────────
 
-  importData(customers: Customer[], orders: Order[]): void {
+  importData(customers: Customer[], orders: Order[], dressConfigs?: DressConfig[]): void {
     localStorage.setItem('tailor_customers', JSON.stringify(customers));
     localStorage.setItem('tailor_orders', JSON.stringify(orders));
+    if (dressConfigs?.length) localStorage.setItem(DRESS_CONFIGS_KEY, JSON.stringify(dressConfigs));
   }
+
+  // ── Dress Configs ─────────────────────────────────────────────
+
+  getDressConfigs(): DressConfig[] {
+    const data = localStorage.getItem(DRESS_CONFIGS_KEY);
+    if (data) return JSON.parse(data);
+    localStorage.setItem(DRESS_CONFIGS_KEY, JSON.stringify(DEFAULT_DRESS_CONFIGS));
+    return DEFAULT_DRESS_CONFIGS;
+  }
+
+  saveDressConfigs(configs: DressConfig[]): void {
+    localStorage.setItem(DRESS_CONFIGS_KEY, JSON.stringify(configs));
+  }
+
+  addDressConfig(name: string, fields: MeasurementField[]): DressConfig {
+    const configs = this.getDressConfigs();
+    const config: DressConfig = { id: this.genId(), name, fields, isDefault: false };
+    configs.push(config);
+    this.saveDressConfigs(configs);
+    return config;
+  }
+
+  updateDressConfig(config: DressConfig): void {
+    const configs = this.getDressConfigs();
+    const idx = configs.findIndex(c => c.id === config.id);
+    if (idx > -1) configs[idx] = config;
+    this.saveDressConfigs(configs);
+  }
+
+  deleteDressConfig(id: string): void {
+    this.saveDressConfigs(this.getDressConfigs().filter(c => c.id !== id));
+  }
+
+  // ── Order Stats ───────────────────────────────────────────────
 
   getOrderStats() {
     const orders = this.getOrders();

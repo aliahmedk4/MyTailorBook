@@ -9,15 +9,9 @@ export interface Order {
   price?: string;
   dueDate?: string;
   status: OrderStatus;
-  measurements: {
-    chest?: string;
-    waist?: string;
-    hip?: string;
-    shoulder?: string;
-    sleeveLength?: string;
-    length?: string;
-  };
+  measurements: Record<string, string>;
   notes?: string;
-  imageUrl?: string;
+  imageUrl?: string;     // local base64 — never sent to Drive JSON
+  imageFileId?: string;  // Drive file ID — stored in JSON, used to restore imageUrl
   createdAt: string;
 }

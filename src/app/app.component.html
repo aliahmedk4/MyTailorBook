@@ -38,6 +38,21 @@
             <p class="footer-sub">v1.0 · Offline Ready</p>
           </div>
         </div>
+
+        <!-- ── DEV: Dummy Data Loader ── -->
+        <div class="dev-panel">
+          <p class="dev-label">🧪 DEV TEST</p>
+          <ion-button expand="block" size="small" fill="outline" color="warning"
+            [disabled]="dummyLoading" (click)="loadDummyOrders()">
+            <ion-spinner *ngIf="dummyLoading" name="crescent" slot="start"></ion-spinner>
+            {{ dummyLoading ? 'Loading…' : 'Load ' + this.TOTAL + ' Dummy Orders' }}
+          </ion-button>
+          <ion-button expand="block" size="small" fill="outline" color="danger"
+            (click)="clearDummyOrders()">
+            Clear All Orders
+          </ion-button>
+          <p class="dev-result" *ngIf="dummyResult">{{ dummyResult }}</p>
+        </div>
       </div>
     </ion-content>
   </ion-menu>

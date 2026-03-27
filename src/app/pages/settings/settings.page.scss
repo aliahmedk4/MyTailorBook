@@ -1,0 +1,128 @@
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 12px;
+
+  h2 { margin: 0 0 2px; font-size: 18px; font-weight: 800; color: var(--t-text); }
+  p  { margin: 0; font-size: 12px; color: var(--t-subtext); }
+
+  .add-btn {
+    --background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+    --border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+}
+
+.configs-list { padding: 0 14px 100px; display: flex; flex-direction: column; gap: 12px; }
+
+.config-card {
+  background: var(--t-surface);
+  border-radius: 18px;
+  border: 1px solid var(--t-border);
+  box-shadow: var(--t-shadow-sm);
+  overflow: hidden;
+}
+
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 10px 14px 16px;
+  cursor: pointer;
+  user-select: none;
+
+  .config-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .config-badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: rgba(16,185,129,0.12);
+    color: #10b981;
+    flex-shrink: 0;
+    &.default-badge { background: rgba(14,165,233,0.12); color: #0ea5e9; }
+  }
+
+  .config-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--t-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .field-count {
+    font-size: 11px;
+    color: var(--t-subtext);
+    flex-shrink: 0;
+  }
+
+  .config-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+  }
+
+  .chevron {
+    font-size: 16px;
+    color: var(--t-subtext);
+    margin-left: 4px;
+  }
+}
+
+.fields-body {
+  border-top: 1px solid var(--t-border);
+  padding: 12px 14px;
+  background: var(--ion-background-color, #f8fafc);
+}
+
+.fields-list { margin-bottom: 10px; }
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--t-border);
+
+  &:last-child { border-bottom: none; }
+
+  .field-icon { font-size: 14px; color: var(--t-subtext); flex-shrink: 0; }
+
+  .field-label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--t-text);
+  }
+
+  .field-actions { display: flex; gap: 0; }
+}
+
+.no-fields {
+  text-align: center;
+  font-size: 13px;
+  color: var(--t-subtext);
+  padding: 12px 0;
+}
+
+.add-field-btn {
+  --border-color: #0ea5e9;
+  --color: #0ea5e9;
+  --border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
