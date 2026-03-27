@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { AlertController, IonInfiniteScroll, ToastController } from '@ionic/angular';
 import { StorageService } from '../../services/storage.service';
-import { ImageStoreService } from '../../services/image-store.service';
+import { IdbService } from '../../services/idb.service';
 import { Order, OrderStatus } from '../../models/order.model';
 
 const PAGE_SIZE = 20;
@@ -30,20 +30,20 @@ export class OrdersPage {
 
   constructor(
     private storage: StorageService,
-    private imageStore: ImageStoreService,
+    private idb: IdbService,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController
   ) {}
 
   ionViewWillEnter() { this.reload(); }
 
-  // ── Full reload (on enter / pull-to-refresh) ────────────────────
-
   reload(event?: any) {
-    this.stats      = this.storage.getOrderStats();
-    this.buildMaster();
-    this.resetPages();
-    if (event) event.target.complete();
+    this.storage.getOrdersAsync().then(() => {
+      this.stats = this.storage.getOrderStats();
+      this.buildMaster();
+      this.resetPages();
+      if (event) event.target.complete();
+    });
   }
 
   // ── Build sorted+filtered master list ──────────────────────────
@@ -81,7 +81,7 @@ export class OrdersPage {
     // Push orders first, then lazily attach images from IndexedDB
     this.displayed.push(...slice);
     slice.forEach(order => {
-      this.imageStore.get(order.id).then(url => {
+      this.idb.getImage(order.id).then(url => {
         if (!url) return;
         const target = this.displayed.find(o => o.id === order.id);
         if (target) target.imageUrl = url;
@@ -125,7 +125,7 @@ export class OrdersPage {
     const next: Record<OrderStatus, OrderStatus> = {
       'Pending': 'In Progress', 'In Progress': 'Ready', 'Ready': 'Delivered', 'Delivered': 'Pending'
     };
-    this.storage.updateOrderStatus(order.id, next[order.status]);
+    await this.storage.updateOrderStatus(order.id, next[order.status]);
     this.reload();
     this.showToast(`Status → ${next[order.status]}`);
   }
@@ -136,7 +136,7 @@ export class OrdersPage {
       message: `Delete order for ${order.customerName}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive', handler: () => { this.storage.deleteOrder(order.id); this.reload(); this.showToast('Order deleted'); } }
+        { text: 'Delete', role: 'destructive', handler: async () => { await this.storage.deleteOrder(order.id); this.reload(); this.showToast('Order deleted'); } }
       ]
     });
     await alert.present();

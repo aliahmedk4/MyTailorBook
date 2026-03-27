@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { GoogleDriveService } from './services/google-drive.service';
 import { StorageService } from './services/storage.service';
 import { ImageStoreService } from './services/image-store.service';
+import { IdbService } from './services/idb.service';
 
 const LAST_AUTO_BACKUP_KEY = 'last_auto_backup_date';
 
@@ -23,7 +24,7 @@ export class AppComponent implements OnInit {
   dummyResult  = '';
   TOTAL       = 10000;
 
-  constructor(private drive: GoogleDriveService, private storage: StorageService, private imageStore: ImageStoreService) {}
+  constructor(private drive: GoogleDriveService, private storage: StorageService, private imageStore: ImageStoreService, private idb: IdbService) {}
 
   ngOnInit() { this.scheduleAutoBackup(); }
 
@@ -40,20 +41,18 @@ export class AppComponent implements OnInit {
     const randNum = (min: number, max: number) => (Math.random() * (max - min) + min).toFixed(1);
     const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-    const CHUNK = 200;
-    let created = 0;
-    // Read index once upfront — we'll append to it in bulk
-    const index: string[] = JSON.parse(localStorage.getItem('tailor_orders_index') || '[]');
+    const CHUNK   = 500;
+    let created   = 0;
+    const batch: any[] = [];
 
-    const processChunk = () => {
+    const processChunk = async () => {
       const end = Math.min(created + CHUNK, this.TOTAL);
       for (let i = created; i < end; i++) {
         const customer  = rand(customers);
         const dressType = rand(dressTypes);
         const due = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000);
-        const id  = genId();
-        const order = {
-          id, customerId: customer.id, customerName: customer.name, dressType,
+        batch.push({
+          id: genId(), customerId: customer.id, customerName: customer.name, dressType,
           quantity: Math.ceil(Math.random() * 3),
           price: String(Math.floor(Math.random() * 4000) + 500),
           dueDate: due.toISOString().split('T')[0],
@@ -64,24 +63,20 @@ export class AppComponent implements OnInit {
             sleeveLength: randNum(22, 28), length: randNum(28, 44),
           },
           notes: '', createdAt: new Date().toISOString()
-        };
-        // Write order record directly — bypass addOrder to avoid per-call index writes
-        localStorage.setItem('order_' + id, JSON.stringify(order));
-        index.unshift(id);
+        });
       }
       created = end;
 
+      // Flush chunk to IDB
+      await this.idb.bulkSaveOrders(batch.slice(created - CHUNK < 0 ? 0 : created - CHUNK));
+
       if (created < this.TOTAL) {
-        // Flush index every chunk so progress is saved
-        localStorage.setItem('tailor_orders_index', JSON.stringify(index));
+        this.dummyResult = `Loading... ${created}/${this.TOTAL}`;
         setTimeout(processChunk, 0);
       } else {
-        localStorage.setItem('tailor_orders_index', JSON.stringify(index));
-        const jsonSize = new Blob([JSON.stringify({
-          orders: index.length,
-          customers: this.storage.getCustomers(),
-        })]).size;
-        this.dummyResult  = `✅ ${this.TOTAL} orders added (total: ${index.length}). Index size: ${(jsonSize / 1024).toFixed(1)} KB`;
+        await this.idb.bulkSaveOrders(batch); // final flush
+        this.storage['_ordersCache'] = null;  // invalidate cache
+        this.dummyResult  = `✅ ${this.TOTAL} orders written to IndexedDB. No localStorage used.`;
         this.dummyLoading = false;
       }
     };
@@ -89,13 +84,14 @@ export class AppComponent implements OnInit {
     setTimeout(processChunk, 0);
   }
 
-  clearDummyOrders() {
-    // Remove every order_* key and reset the index
-    const index: string[] = JSON.parse(localStorage.getItem('tailor_orders_index') || '[]');
-    index.forEach(id => localStorage.removeItem('order_' + id));
+  async clearDummyOrders() {
+    await this.idb.clearOrders();
+    this.storage['_ordersCache'] = null;
+    // also clear any legacy localStorage keys
+    localStorage.removeItem('tailor_orders');
     localStorage.removeItem('tailor_orders_index');
-    localStorage.removeItem('tailor_orders'); // legacy key
-    this.dummyResult = '🗑️ All orders cleared.';
+    Object.keys(localStorage).filter(k => k.startsWith('order_')).forEach(k => localStorage.removeItem(k));
+    this.dummyResult = '🗑️ All orders cleared from IndexedDB.';
   }
 
   private scheduleAutoBackup() {
@@ -127,7 +123,7 @@ export class AppComponent implements OnInit {
     const todayStr = new Date().toDateString();
     if (localStorage.getItem(LAST_AUTO_BACKUP_KEY) === todayStr) return;
     try {
-      const images = await this.imageStore.getAll();
+      const images = await this.idb.getAllImages();
       await this.drive.backup({
         version: 1,
         backedUpAt: new Date().toISOString(),

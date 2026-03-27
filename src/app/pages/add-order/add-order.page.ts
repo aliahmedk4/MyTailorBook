@@ -196,9 +196,10 @@ export class AddOrderPage implements OnInit {
     };
 
     if (this.isEdit) {
-      this.storage.updateOrder({ ...this.storage.getOrder(this.orderId)!, ...payload });
+      const existing = await this.storage.getOrder(this.orderId);
+      if (existing) await this.storage.updateOrder({ ...existing, ...payload });
     } else {
-      this.storage.addOrder(payload);
+      await this.storage.addOrder(payload);
     }
 
     const toast = await this.toastCtrl.create({

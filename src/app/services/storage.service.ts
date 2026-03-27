@@ -3,11 +3,9 @@ import { Customer } from '../models/customer.model';
 import { DressMeasurement } from '../models/dress-measurement.model';
 import { Order, OrderStatus } from '../models/order.model';
 import { DressConfig, MeasurementField } from '../models/dress-config.model';
-import { ImageStoreService } from './image-store.service';
+import { IdbService } from './idb.service';
 
 const CUSTOMERS_KEY     = 'tailor_customers';
-const ORDERS_INDEX_KEY  = 'tailor_orders_index';
-const ORDER_PREFIX      = 'order_';
 const DRESS_CONFIGS_KEY = 'tailor_dress_configs';
 
 const DEFAULT_DRESS_CONFIGS: DressConfig[] = [
@@ -40,22 +38,22 @@ const DEFAULT_DRESS_CONFIGS: DressConfig[] = [
 @Injectable({ providedIn: 'root' })
 export class StorageService {
 
-  constructor(private imageStore: ImageStoreService) {}
+  constructor(private idb: IdbService) {}
 
   private genId(): string {
     return Date.now().toString(36) + Math.random().toString(36).slice(2);
   }
 
-  // ── Customers ──────────────────────────────────────────────────────
+  // ── Customers (localStorage — small, text only) ─────────────────
 
   getCustomers(): Customer[] {
     const data = localStorage.getItem(CUSTOMERS_KEY);
     if (data) return JSON.parse(data);
-    return this.initSampleData();
+    return this.initSampleCustomers();
   }
 
-  private saveCustomers(customers: Customer[]): void {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+  private saveCustomers(c: Customer[]): void {
+    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(c));
   }
 
   getCustomer(id: string): Customer | undefined {
@@ -79,16 +77,16 @@ export class StorageService {
 
   deleteCustomer(id: string): void {
     this.saveCustomers(this.getCustomers().filter(c => c.id !== id));
-    const ids = this.getOrderIndex();
-    const toDelete = ids.filter(oid => {
-      const raw = localStorage.getItem(ORDER_PREFIX + oid);
-      return raw ? (JSON.parse(raw) as Order).customerId === id : false;
+    // async — delete all orders + images for this customer
+    this.idb.getAllOrders().then(orders => {
+      orders.filter(o => o.customerId === id).forEach(o => {
+        this.idb.deleteOrder(o.id);
+        this.idb.deleteImage(o.id);
+      });
     });
-    toDelete.forEach(oid => { this.deleteOrderRecord(oid); this.imageStore.delete(oid); });
-    this.saveOrderIndex(ids.filter(oid => !toDelete.includes(oid)));
   }
 
-  // ── Measurements ───────────────────────────────────────────────────
+  // ── Measurements ────────────────────────────────────────────────
 
   addMeasurement(customerId: string, m: Omit<DressMeasurement, 'id'>): void {
     const customers = this.getCustomers();
@@ -100,10 +98,7 @@ export class StorageService {
   updateMeasurement(customerId: string, m: DressMeasurement): void {
     const customers = this.getCustomers();
     const c = customers.find(x => x.id === customerId);
-    if (c) {
-      const idx = c.measurements.findIndex(x => x.id === m.id);
-      if (idx > -1) c.measurements[idx] = m;
-    }
+    if (c) { const idx = c.measurements.findIndex(x => x.id === m.id); if (idx > -1) c.measurements[idx] = m; }
     this.saveCustomers(customers);
   }
 
@@ -114,106 +109,124 @@ export class StorageService {
     this.saveCustomers(customers);
   }
 
-  // ── Orders ─────────────────────────────────────────────────────────
+  // ── Orders (IndexedDB — unlimited) ──────────────────────────────
 
-  private getOrderIndex(): string[] {
-    const raw = localStorage.getItem(ORDERS_INDEX_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }
+  // Sync wrapper — returns cached result; callers that need fresh data use getOrdersAsync
+  private _ordersCache: Order[] | null = null;
 
-  private saveOrderIndex(ids: string[]): void {
-    localStorage.setItem(ORDERS_INDEX_KEY, JSON.stringify(ids));
-  }
-
-  // Strip imageUrl before writing to localStorage — images live in IndexedDB only
-  private saveOrderRecord(order: Order): void {
-    const { imageUrl, ...rest } = order;
-    localStorage.setItem(ORDER_PREFIX + order.id, JSON.stringify(rest));
-  }
-
-  private deleteOrderRecord(id: string): void {
-    localStorage.removeItem(ORDER_PREFIX + id);
-  }
-
-  getOrders(): Order[] {
-    // migrate old single-blob format on first access
-    const legacy = localStorage.getItem('tailor_orders');
-    if (legacy) {
-      const old: Order[] = JSON.parse(legacy);
-      old.forEach(o => this.saveOrderRecord(o));
-      this.saveOrderIndex(old.map(o => o.id));
+  async getOrdersAsync(): Promise<Order[]> {
+    // migrate old localStorage orders on first call
+    const legacyBlob = localStorage.getItem('tailor_orders');
+    if (legacyBlob) {
+      const old: Order[] = JSON.parse(legacyBlob);
+      await this.idb.bulkSaveOrders(old);
       localStorage.removeItem('tailor_orders');
     }
-    return this.getOrderIndex()
-      .map(id => {
-        const raw = localStorage.getItem(ORDER_PREFIX + id);
-        return raw ? JSON.parse(raw) as Order : null;
-      })
-      .filter((o): o is Order => o !== null);
+    // migrate old per-key orders
+    const legacyIndex = localStorage.getItem('tailor_orders_index');
+    if (legacyIndex) {
+      const ids: string[] = JSON.parse(legacyIndex);
+      const migrated: Order[] = [];
+      ids.forEach(id => {
+        const raw = localStorage.getItem('order_' + id);
+        if (raw) { migrated.push(JSON.parse(raw)); localStorage.removeItem('order_' + id); }
+      });
+      if (migrated.length) await this.idb.bulkSaveOrders(migrated);
+      localStorage.removeItem('tailor_orders_index');
+    }
+    const orders = await this.idb.getAllOrders();
+    this._ordersCache = orders;
+    return orders;
   }
 
-  // Loads order + attaches imageUrl from IndexedDB
-  async getOrderWithImage(id: string): Promise<Order | undefined> {
-    const order = this.getOrder(id);
-    if (!order) return undefined;
-    const imageUrl = await this.imageStore.get(id);
-    return imageUrl ? { ...order, imageUrl } : order;
+  // Synchronous — returns cache (may be stale on first load; pages should call getOrdersAsync)
+  getOrders(): Order[] {
+    return this._ordersCache ?? [];
+  }
+
+  async getOrdersForCustomerAsync(customerId: string): Promise<Order[]> {
+    const all = await this.getOrdersAsync();
+    return all.filter(o => o.customerId === customerId);
   }
 
   getOrdersForCustomer(customerId: string): Order[] {
     return this.getOrders().filter(o => o.customerId === customerId);
   }
 
-  getOrder(id: string): Order | undefined {
-    const raw = localStorage.getItem(ORDER_PREFIX + id);
-    return raw ? JSON.parse(raw) : undefined;
+  async getOrder(id: string): Promise<Order | undefined> {
+    return this.idb.getOrder(id);
   }
 
-  addOrder(order: Omit<Order, 'id' | 'createdAt'>): Order {
+  async getOrderWithImage(id: string): Promise<Order | undefined> {
+    const order = await this.idb.getOrder(id);
+    if (!order) return undefined;
+    const imageUrl = await this.idb.getImage(id);
+    return imageUrl ? { ...order, imageUrl } : order;
+  }
+
+  async addOrder(order: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
     const { imageUrl, ...rest } = order as any;
     const newOrder: Order = { ...rest, id: this.genId(), createdAt: new Date().toISOString() };
-    this.saveOrderRecord(newOrder);
-    if (imageUrl) this.imageStore.save(newOrder.id, imageUrl);
-    const ids = this.getOrderIndex();
-    ids.unshift(newOrder.id);
-    this.saveOrderIndex(ids);
+    await this.idb.saveOrder(newOrder);
+    if (imageUrl) await this.idb.saveImage(newOrder.id, imageUrl);
+    if (this._ordersCache) this._ordersCache.unshift(newOrder);
     return newOrder;
   }
 
-  updateOrder(order: Order): void {
+  async updateOrder(order: Order): Promise<void> {
     const { imageUrl, ...rest } = order;
-    this.saveOrderRecord(rest as Order);
+    await this.idb.saveOrder(rest as Order);
     if (imageUrl) {
-      this.imageStore.save(order.id, imageUrl);
+      await this.idb.saveImage(order.id, imageUrl);
     } else {
-      // imageUrl explicitly removed — delete from IndexedDB too
-      this.imageStore.delete(order.id);
+      await this.idb.deleteImage(order.id);
+    }
+    if (this._ordersCache) {
+      const idx = this._ordersCache.findIndex(o => o.id === order.id);
+      if (idx > -1) this._ordersCache[idx] = rest as Order;
     }
   }
 
-  updateOrderStatus(id: string, status: OrderStatus): void {
-    const order = this.getOrder(id);
-    if (order) this.saveOrderRecord({ ...order, status });
+  async updateOrderStatus(id: string, status: OrderStatus): Promise<void> {
+    const order = await this.idb.getOrder(id);
+    if (order) await this.idb.saveOrder({ ...order, status });
+    if (this._ordersCache) {
+      const o = this._ordersCache.find(x => x.id === id);
+      if (o) o.status = status;
+    }
   }
 
-  deleteOrder(id: string): void {
-    this.deleteOrderRecord(id);
-    this.imageStore.delete(id);
-    this.saveOrderIndex(this.getOrderIndex().filter(i => i !== id));
+  async deleteOrder(id: string): Promise<void> {
+    await this.idb.deleteOrder(id);
+    await this.idb.deleteImage(id);
+    if (this._ordersCache) this._ordersCache = this._ordersCache.filter(o => o.id !== id);
   }
 
-  // ── Import (Restore) ───────────────────────────────────────────────
+  // ── Import / Restore ────────────────────────────────────────────
 
   async importData(customers: Customer[], orders: Order[], dressConfigs?: DressConfig[], images?: Record<string, string>): Promise<void> {
     localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
-    this.getOrderIndex().forEach(id => this.deleteOrderRecord(id));
-    orders.forEach(o => this.saveOrderRecord(o));
-    this.saveOrderIndex(orders.map(o => o.id));
+    await this.idb.clearOrders();
+    await this.idb.bulkSaveOrders(orders);
+    this._ordersCache = null;
     if (dressConfigs?.length) localStorage.setItem(DRESS_CONFIGS_KEY, JSON.stringify(dressConfigs));
-    if (images) await this.imageStore.restoreAll(images);
+    if (images && Object.keys(images).length) await this.idb.bulkSaveImages(images);
   }
 
-  // ── Dress Configs ──────────────────────────────────────────────────
+  // ── Order Stats ─────────────────────────────────────────────────
+
+  getOrderStats() {
+    const orders = this.getOrders();
+    return {
+      total:      orders.length,
+      pending:    orders.filter(o => o.status === 'Pending').length,
+      inProgress: orders.filter(o => o.status === 'In Progress').length,
+      ready:      orders.filter(o => o.status === 'Ready').length,
+      delivered:  orders.filter(o => o.status === 'Delivered').length,
+    };
+  }
+
+  // ── Dress Configs ───────────────────────────────────────────────
 
   getDressConfigs(): DressConfig[] {
     const data = localStorage.getItem(DRESS_CONFIGS_KEY);
@@ -245,46 +258,27 @@ export class StorageService {
     this.saveDressConfigs(this.getDressConfigs().filter(c => c.id !== id));
   }
 
-  // ── Order Stats ────────────────────────────────────────────────────
+  // ── Sample Data ─────────────────────────────────────────────────
 
-  getOrderStats() {
-    const orders = this.getOrders();
-    return {
-      total:      orders.length,
-      pending:    orders.filter(o => o.status === 'Pending').length,
-      inProgress: orders.filter(o => o.status === 'In Progress').length,
-      ready:      orders.filter(o => o.status === 'Ready').length,
-      delivered:  orders.filter(o => o.status === 'Delivered').length,
-    };
-  }
-
-  // ── Sample Data ────────────────────────────────────────────────────
-
-  private initSampleData(): Customer[] {
+  private initSampleCustomers(): Customer[] {
     const customers: Customer[] = [
-      {
-        id: 'c1', name: 'Ahmed Khan', phone: '0300-1234567',
-        measurements: [
-          { id: 'm1', dressType: 'Shirt', measurements: { chest: '40', waist: '36', shoulder: '17', sleeveLength: '25', length: '30' }, notes: 'Loose fit' },
-          { id: 'm2', dressType: 'Pant',  measurements: { waist: '34', hip: '40', length: '42' }, notes: '' }
-        ]
-      },
-      {
-        id: 'c2', name: 'Sara Ali', phone: '0321-9876543',
-        measurements: [
-          { id: 'm3', dressType: 'Blouse', measurements: { chest: '36', waist: '30', shoulder: '14', sleeveLength: '22', length: '18' }, notes: 'Silk fabric' }
-        ]
-      }
+      { id: 'c1', name: 'Ahmed Khan', phone: '0300-1234567', measurements: [
+        { id: 'm1', dressType: 'Shirt', measurements: { chest: '40', waist: '36', shoulder: '17', sleeveLength: '25', length: '30' }, notes: 'Loose fit' },
+        { id: 'm2', dressType: 'Pant',  measurements: { waist: '34', hip: '40', length: '42' }, notes: '' }
+      ]},
+      { id: 'c2', name: 'Sara Ali', phone: '0321-9876543', measurements: [
+        { id: 'm3', dressType: 'Blouse', measurements: { chest: '36', waist: '30', shoulder: '14', sleeveLength: '22', length: '18' }, notes: 'Silk fabric' }
+      ]},
     ];
     this.saveCustomers(customers);
-
+    // seed sample orders into IDB
     const orders: Order[] = [
-      { id: 'o1', customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Shirt',  quantity: 2, price: '1200', dueDate: '2025-08-10', status: 'In Progress', measurements: { chest: '40', waist: '36', shoulder: '17', sleeveLength: '25', length: '30' }, notes: 'White fabric, loose fit', createdAt: new Date().toISOString() },
-      { id: 'o2', customerId: 'c2', customerName: 'Sara Ali',   dressType: 'Blouse', quantity: 1, price: '800',  dueDate: '2025-08-05', status: 'Ready',       measurements: { chest: '36', waist: '30', shoulder: '14', sleeveLength: '22', length: '18' }, notes: 'Silk fabric',          createdAt: new Date().toISOString() },
-      { id: 'o3', customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Pant',   quantity: 1, price: '600',  dueDate: '2025-08-15', status: 'Pending',     measurements: { waist: '34', hip: '40', length: '42' },                                       notes: '',                     createdAt: new Date().toISOString() }
+      { id: 'o1', customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Shirt',  quantity: 2, price: '1200', dueDate: '2025-08-10', status: 'In Progress', measurements: { chest: '40', waist: '36', shoulder: '17', sleeveLength: '25', length: '30' }, notes: 'White fabric', createdAt: new Date().toISOString() },
+      { id: 'o2', customerId: 'c2', customerName: 'Sara Ali',   dressType: 'Blouse', quantity: 1, price: '800',  dueDate: '2025-08-05', status: 'Ready',       measurements: { chest: '36', waist: '30', shoulder: '14', sleeveLength: '22', length: '18' }, notes: 'Silk fabric', createdAt: new Date().toISOString() },
+      { id: 'o3', customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Pant',   quantity: 1, price: '600',  dueDate: '2025-08-15', status: 'Pending',     measurements: { waist: '34', hip: '40', length: '42' },                                       notes: '',            createdAt: new Date().toISOString() },
     ];
-    orders.forEach(o => this.saveOrderRecord(o));
-    this.saveOrderIndex(orders.map(o => o.id));
+    this.idb.bulkSaveOrders(orders);
+    this._ordersCache = orders;
     return customers;
   }
 }

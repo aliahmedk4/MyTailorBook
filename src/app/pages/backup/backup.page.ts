@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleDriveService } from '../../services/google-drive.service';
 import { StorageService } from '../../services/storage.service';
-import { ImageStoreService } from '../../services/image-store.service';
+import { IdbService } from '../../services/idb.service';
 
 @Component({
   selector: 'app-backup',
@@ -18,7 +18,7 @@ export class BackupPage implements OnInit {
   constructor(
     private drive: GoogleDriveService,
     private storage: StorageService,
-    private imageStore: ImageStoreService,
+    private idb: IdbService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController
@@ -56,7 +56,7 @@ export class BackupPage implements OnInit {
     const loading = await this.loadingCtrl.create({ message: 'Backing up… uploading images', spinner: 'crescent' });
     await loading.present();
     try {
-      const images = await this.imageStore.getAll();
+      const images = await this.idb.getAllImages();
       const data = {
         version: 1,
         backedUpAt: new Date().toISOString(),
