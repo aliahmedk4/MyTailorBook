@@ -3,8 +3,9 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/orders"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ isEdit ? 'Edit Order' : 'New Order' }}</ion-title>
-    <div slot="end" class="order-no-badge">#{{ previewOrderNo }}</div>
+    <ion-title>#{{ previewOrderNo }}</ion-title>
+    <!-- <ion-title>{{ isEdit ? 'Edit Order' : 'New Order' }}</ion-title> -->
+    <!-- <div slot="end" class="order-no-badge">#{{ previewOrderNo }}</div> -->
     <ion-buttons slot="end" *ngIf="isEdit">
       <ion-button fill="clear" (click)="showShareSheet()">
         <ion-icon slot="icon-only" name="share-social-outline"></ion-icon>

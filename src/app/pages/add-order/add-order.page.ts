@@ -57,6 +57,11 @@ export class AddOrderPage implements OnInit {
     this.dressConfigs = this.storage.getDressConfigs();
     this.statuses = this.storage.getStatuses();
 
+    // pre-load customer if already known
+    if (this.customerId && this.customerId !== 'pick') {
+      this.customer = this.storage.getCustomer(this.customerId);
+    }
+
     this.form = this.fb.group({
       customerId: [pickingCustomer ? '' : this.customerId, Validators.required],
       quantity:   [1, [Validators.required, Validators.min(1)]],
@@ -105,6 +110,8 @@ export class AddOrderPage implements OnInit {
       });
     } else {
       this.addDressEntry();
+      // prefill first entry if customer already known
+      if (this.customer) this.prefillEntry(0);
     }
   }
 
@@ -300,108 +307,143 @@ export class AddOrderPage implements OnInit {
 
     const dressBlocks = this.dressEntries.map((entry, i) => {
       const thumbHtml = entry.imagePreview
-        ? `<img src="${entry.imagePreview}" class="dress-thumb" alt="dress ${i + 1}"/>`
-        : '';
-      const cells = entry.fields.map(f =>
-        `<div class="measure-cell"><strong>${entry.measurements[f.key] || '—'}</strong><span>${f.label}</span></div>`
-      ).join('');
+        ? `<img src="${entry.imagePreview}" class="dress-thumb" alt=""/>`
+        : '<div class="dress-thumb-empty"></div>';
+
+      const chips = entry.fields
+        .map(f => `<div class="m-chip"><span class="m-val">${entry.measurements[f.key] || '—'}&quot;</span><span class="m-lbl">${f.label}</span></div>`)
+        .join('');
+
       return `
-        <div class="dress-block">
-          <div class="dress-block-header">
-            <div class="dress-type-badge">${entry.dressType}</div>
-            ${thumbHtml}
+      <div class="dress-block">
+        <div class="db-header">
+          ${thumbHtml}
+          <div class="db-meta">
+            <div class="db-badge">${entry.dressType}</div>
+            <div class="db-count">${entry.fields.length} measurements</div>
           </div>
-          ${cells ? `<div class="measure-grid">${cells}</div>` : ''}
-        </div>`;
+        </div>
+        ${chips ? `<div class="m-chips">${chips}</div>` : '<div class="m-empty">No measurements recorded</div>'}
+      </div>`;
     }).join('');
 
     return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <title>Order #${this.previewOrderNo}</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4f8; padding:24px; color:#1e293b; }
-  .page { max-width:740px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 32px rgba(0,0,0,0.12); }
-  .header { background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0ea5e9 100%); padding:28px 32px; display:flex; justify-content:space-between; align-items:flex-start; }
-  .shop-name { font-size:24px; font-weight:900; color:#fff; letter-spacing:-0.5px; }
-  .shop-sub  { font-size:11px; color:rgba(255,255,255,0.6); margin-top:4px; letter-spacing:1px; text-transform:uppercase; }
-  .order-badge { background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.3); border-radius:12px; padding:10px 18px; text-align:right; }
-  .order-badge .no  { font-size:22px; font-weight:900; color:#fff; }
-  .order-badge .lbl { font-size:10px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:1px; }
-  .status-bar { background:${sColor}18; border-bottom:3px solid ${sColor}; padding:10px 32px; display:flex; align-items:center; gap:10px; }
-  .status-dot  { width:10px; height:10px; border-radius:50%; background:${sColor}; flex-shrink:0; }
-  .status-text { font-size:12px; font-weight:800; color:${sColor}; text-transform:uppercase; letter-spacing:1px; }
-  .status-dates { margin-left:auto; font-size:12px; color:#64748b; display:flex; gap:16px; }
-  .body { padding:24px 32px; }
-  .section-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; color:#94a3b8; margin-bottom:10px; }
-  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
-  .info-card { background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; padding:14px; }
-  .info-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #f1f5f9; }
-  .info-row:last-child { border-bottom:none; }
-  .info-lbl { font-size:12px; color:#94a3b8; }
-  .info-val { font-size:12px; color:#1e293b; font-weight:700; }
-  .customer-name  { font-size:16px; font-weight:900; color:#1e293b; margin-bottom:4px; }
-  .customer-phone { font-size:12px; color:#64748b; margin-top:3px; }
-  .dress-block { margin-bottom:20px; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; }
-  .dress-block-header { background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:12px; }
-  .dress-type-badge { background:linear-gradient(135deg,#6c63ff,#a78bfa); color:#fff; font-size:12px; font-weight:800; padding:4px 14px; border-radius:20px; flex-shrink:0; }
-  .dress-thumb { width:48px; height:48px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0; margin-left:auto; flex-shrink:0; }
-  .measure-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#e2e8f0; }
-  .measure-cell { background:#fff; padding:12px 8px; text-align:center; }
-  .measure-cell strong { display:block; font-size:18px; font-weight:900; color:#6c63ff; }
-  .measure-cell span   { font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; }
-  .notes-box { background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px 16px; margin-bottom:20px; }
-  .notes-box p { font-size:13px; color:#92400e; line-height:1.6; }
-  .footer { background:#f8fafc; border-top:1px solid #e2e8f0; padding:14px 32px; display:flex; justify-content:space-between; align-items:center; }
-  .footer-brand { font-size:11px; color:#94a3b8; }
-  .footer-price { font-size:20px; font-weight:900; color:#10b981; }
-  .footer-price span { font-size:11px; font-weight:500; color:#94a3b8; display:block; text-align:right; }
-  @media print { body { background:#fff; padding:0; } .page { box-shadow:none; border-radius:0; } }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f7;padding:20px;color:#1e293b;font-size:13px}
+  .page{max-width:680px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 40px rgba(0,0,0,0.13)}
+
+  /* ── Header ── */
+  .hdr{background:linear-gradient(120deg,#0f172a 0%,#1d4ed8 55%,#0ea5e9 100%);padding:22px 28px;display:flex;justify-content:space-between;align-items:center}
+  .hdr-left .brand{font-size:20px;font-weight:900;color:#fff;letter-spacing:-0.3px}
+  .hdr-left .tagline{font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+  .hdr-right{text-align:right}
+  .hdr-right .ord-no{font-size:26px;font-weight:900;color:#fff;line-height:1}
+  .hdr-right .ord-lbl{font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px}
+
+  /* ── Status strip ── */
+  .strip{background:${sColor}15;border-left:4px solid ${sColor};padding:8px 28px;display:flex;align-items:center;gap:8px}
+  .strip-dot{width:8px;height:8px;border-radius:50%;background:${sColor};flex-shrink:0}
+  .strip-status{font-size:11px;font-weight:800;color:${sColor};text-transform:uppercase;letter-spacing:.8px}
+  .strip-dates{margin-left:auto;font-size:11px;color:#64748b;display:flex;gap:14px}
+
+  /* ── Body ── */
+  .body{padding:20px 28px}
+
+  /* ── Info row ── */
+  .info-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .card{background:#f8fafc;border:1px solid #e8edf3;border-radius:10px;padding:12px 14px}
+  .card-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:8px}
+  .cust-name{font-size:15px;font-weight:900;color:#0f172a;margin-bottom:3px}
+  .cust-sub{font-size:11px;color:#64748b;margin-top:2px}
+  .kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9}
+  .kv:last-child{border:none}
+  .kv-k{font-size:11px;color:#94a3b8}
+  .kv-v{font-size:11px;font-weight:700;color:#1e293b}
+
+  /* ── Section title ── */
+  .sec{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin:16px 0 8px}
+
+  /* ── Dress block ── */
+  .dress-block{border:1px solid #e8edf3;border-radius:10px;overflow:hidden;margin-bottom:10px}
+  .db-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e8edf3}
+  .dress-thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;flex-shrink:0}
+  .dress-thumb-empty{width:40px;height:40px;border-radius:6px;background:#f1f5f9;flex-shrink:0}
+  .db-meta{flex:1}
+  .db-badge{display:inline-block;background:linear-gradient(135deg,#6c63ff,#818cf8);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.2px}
+  .db-count{font-size:10px;color:#94a3b8;margin-top:2px}
+
+  /* ── Measurement chips ── */
+  .m-chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px}
+  .m-chip{display:flex;flex-direction:column;align-items:center;background:#f8fafc;border:1px solid #e8edf3;border-radius:8px;padding:5px 10px;min-width:60px}
+  .m-val{font-size:13px;font-weight:800;color:#6c63ff;line-height:1.2}
+  .m-lbl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;white-space:nowrap}
+  .m-empty{padding:10px 12px;font-size:11px;color:#94a3b8;font-style:italic}
+
+  /* ── Notes ── */
+  .notes{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-top:12px}
+  .notes p{font-size:12px;color:#92400e;line-height:1.5}
+
+  /* ── Footer ── */
+  .ftr{background:#f8fafc;border-top:1px solid #e8edf3;padding:12px 28px;display:flex;justify-content:space-between;align-items:center}
+  .ftr-brand{font-size:10px;color:#94a3b8}
+  .ftr-price{font-size:18px;font-weight:900;color:#10b981;text-align:right}
+  .ftr-price small{display:block;font-size:10px;font-weight:500;color:#94a3b8}
+
+  @media print{body{background:#fff;padding:0}.page{box-shadow:none;border-radius:0}}
 </style></head><body>
 <div class="page">
-  <div class="header">
-    <div>
-      <div class="shop-name">MyTailorBook</div>
-      <div class="shop-sub">Professional Tailoring</div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="brand">MyTailorBook</div>
+      <div class="tagline">Professional Tailoring</div>
     </div>
-    <div class="order-badge">
-      <div class="lbl">Order No</div>
-      <div class="no">#${this.previewOrderNo}</div>
-    </div>
-  </div>
-  <div class="status-bar">
-    <div class="status-dot"></div>
-    <div class="status-text">${v.status}</div>
-    <div class="status-dates">
-      ${v.orderedDate ? `<span>📅 Ordered: <strong>${v.orderedDate}</strong></span>` : ''}
-      ${v.dueDate     ? `<span>⏰ Due: <strong>${v.dueDate}</strong></span>` : ''}
+    <div class="hdr-right">
+      <div class="ord-lbl">Order No</div>
+      <div class="ord-no">#${this.previewOrderNo}</div>
     </div>
   </div>
+
+  <div class="strip">
+    <div class="strip-dot"></div>
+    <div class="strip-status">${v.status}</div>
+    <div class="strip-dates">
+      ${v.orderedDate ? `<span>&#128197; ${v.orderedDate}</span>` : ''}
+      ${v.dueDate     ? `<span>&#9200; Due ${v.dueDate}</span>` : ''}
+    </div>
+  </div>
+
   <div class="body">
-    <div class="two-col">
-      <div>
-        <div class="section-title">Customer</div>
-        <div class="info-card">
-          <div class="customer-name">${c?.name || v.customerId}</div>
-          ${c?.phone   ? `<div class="customer-phone">📞 ${c.phone}</div>` : ''}
-          ${c?.address ? `<div class="customer-phone">📍 ${c.address}</div>` : ''}
-        </div>
+
+    <div class="info-row">
+      <div class="card">
+        <div class="card-title">Customer</div>
+        <div class="cust-name">${c?.name || v.customerId}</div>
+        ${c?.phone   ? `<div class="cust-sub">&#128222; ${c.phone}</div>` : ''}
+        ${c?.address ? `<div class="cust-sub">&#128205; ${c.address}</div>` : ''}
       </div>
-      <div>
-        <div class="section-title">Order Info</div>
-        <div class="info-card">
-          <div class="info-row"><span class="info-lbl">Quantity</span><span class="info-val">${v.quantity} pcs</span></div>
-          <div class="info-row"><span class="info-lbl">Dress Types</span><span class="info-val">${this.dressEntries.length}</span></div>
-        </div>
+      <div class="card">
+        <div class="card-title">Order Info</div>
+        <div class="kv"><span class="kv-k">Quantity</span><span class="kv-v">${v.quantity} pcs</span></div>
+        ${v.price ? `<div class="kv"><span class="kv-k">Price</span><span class="kv-v">&#8360; ${v.price}</span></div>` : ''}
+        <div class="kv"><span class="kv-k">Dress Types</span><span class="kv-v">${this.dressEntries.length}</span></div>
       </div>
     </div>
-    <div class="section-title">Dress Items & Measurements</div>
+
+    <div class="sec">Dress Items &amp; Measurements</div>
     ${dressBlocks}
-    ${v.notes ? `<div class="notes-box"><div class="section-title" style="margin-bottom:6px">Notes</div><p>${v.notes}</p></div>` : ''}
+
+    ${v.notes ? `<div class="notes"><div class="sec" style="margin:0 0 4px">Notes</div><p>${v.notes}</p></div>` : ''}
+
   </div>
-  <div class="footer">
-    <div class="footer-brand">Generated by MyTailorBook · ${new Date().toLocaleDateString()}</div>
-    ${v.price ? `<div class="footer-price">₨ ${v.price}<span>Total Price</span></div>` : ''}
+
+  <div class="ftr">
+    <div class="ftr-brand">MyTailorBook &middot; ${new Date().toLocaleDateString()}</div>
+    ${v.price ? `<div class="ftr-price">&#8360; ${v.price}<small>Total Price</small></div>` : ''}
   </div>
+
 </div>
 </body></html>`;
   }

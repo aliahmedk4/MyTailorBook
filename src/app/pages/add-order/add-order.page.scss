@@ -151,7 +151,7 @@
 }
 
 // ── Form Body ──────────────────────────────────────────────────────
-.form-body { padding: 16px 14px 48px; }
+.form-body { padding: 16px 14px calc(48px + env(safe-area-inset-bottom, 0px)); }
 
 .section-label {
   font-size: 11px; font-weight: 800; letter-spacing: 1.2px;
@@ -274,6 +274,7 @@
 // ── Save Button ────────────────────────────────────────────────────
 .save-btn {
   margin-top: 28px;
+  margin-bottom: env(safe-area-inset-bottom, 12px);
   --border-radius: 16px;
   --background: linear-gradient(135deg, #4c46c8, #6c63ff, #a78bfa);
   --box-shadow: 0 8px 28px rgba(108,99,255,0.4);
