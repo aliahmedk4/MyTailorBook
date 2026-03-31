@@ -9,7 +9,33 @@
 
 <ion-content>
 
+  <!-- Default Status -->
   <div class="section-header">
+    <div class="section-info">
+      <h2>Order Statuses</h2>
+      <p>Manage statuses · tap to set as default</p>
+    </div>
+    <ion-button fill="solid" size="small" class="add-btn" (click)="addStatus()">
+      <ion-icon slot="start" name="add-outline"></ion-icon> Add
+    </ion-button>
+  </div>
+  <div class="status-list">
+    <div class="status-row" *ngFor="let s of statuses">
+      <div class="status-row-left" (click)="setDefaultStatus(s)">
+        <div class="status-dot" [class]="'dot-' + s.toLowerCase().replace(' ', '-')"></div>
+        <span class="status-name">{{ s }}</span>
+        <span class="default-tag" *ngIf="defaultStatus === s">Default</span>
+      </div>
+      <ion-button fill="clear" size="small" color="danger"
+        [disabled]="s === 'Pending'"
+        (click)="removeStatus(s)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Dress Types -->
+  <div class="section-header" style="margin-top: 8px;">
     <div class="section-info">
       <h2>Dress Types</h2>
       <p>Customize types and their measurement fields</p>

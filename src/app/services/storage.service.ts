@@ -7,6 +7,10 @@ import { IdbService } from './idb.service';
 
 const CUSTOMERS_KEY     = 'tailor_customers';
 const DRESS_CONFIGS_KEY = 'tailor_dress_configs';
+const DEFAULT_STATUS_KEY = 'tailor_default_status';
+const STATUSES_KEY       = 'tailor_statuses';
+
+const DEFAULT_STATUSES = ['Pending', 'In Progress', 'Ready', 'Delivered'];
 
 const DEFAULT_DRESS_CONFIGS: DressConfig[] = [
   { id: 'dc_shirt',  name: 'Shirt',  isDefault: true, fields: [
@@ -42,6 +46,12 @@ export class StorageService {
 
   private genId(): string {
     return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  private nextOrderNo(): number {
+    const n = parseInt(localStorage.getItem('tailor_order_seq') || '0', 10) + 1;
+    localStorage.setItem('tailor_order_seq', n.toString());
+    return n;
   }
 
   // ── Customers (localStorage — small, text only) ─────────────────
@@ -166,7 +176,7 @@ export class StorageService {
 
   async addOrder(order: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
     const { imageUrl, ...rest } = order as any;
-    const newOrder: Order = { ...rest, id: this.genId(), createdAt: new Date().toISOString() };
+    const newOrder: Order = { ...rest, id: this.genId(), orderNo: this.nextOrderNo(), createdAt: new Date().toISOString() };
     await this.idb.saveOrder(newOrder);
     if (imageUrl) await this.idb.saveImage(newOrder.id, imageUrl);
     if (this._ordersCache) this._ordersCache.unshift(newOrder);
@@ -215,15 +225,13 @@ export class StorageService {
 
   // ── Order Stats ─────────────────────────────────────────────────
 
-  getOrderStats() {
+  getOrderStats(): Record<string, number> {
     const orders = this.getOrders();
-    return {
-      total:      orders.length,
-      pending:    orders.filter(o => o.status === 'Pending').length,
-      inProgress: orders.filter(o => o.status === 'In Progress').length,
-      ready:      orders.filter(o => o.status === 'Ready').length,
-      delivered:  orders.filter(o => o.status === 'Delivered').length,
-    };
+    const stats: Record<string, number> = { total: orders.length };
+    this.getStatuses().forEach(s => {
+      stats[s] = orders.filter(o => o.status === s).length;
+    });
+    return stats;
   }
 
   // ── Dress Configs ───────────────────────────────────────────────
@@ -258,6 +266,25 @@ export class StorageService {
     this.saveDressConfigs(this.getDressConfigs().filter(c => c.id !== id));
   }
 
+  // ── Default Status ──────────────────────────────────────────────
+
+  getDefaultStatus(): OrderStatus {
+    return (localStorage.getItem(DEFAULT_STATUS_KEY) as OrderStatus) || 'Pending';
+  }
+
+  setDefaultStatus(status: OrderStatus): void {
+    localStorage.setItem(DEFAULT_STATUS_KEY, status);
+  }
+
+  getStatuses(): string[] {
+    const data = localStorage.getItem(STATUSES_KEY);
+    return data ? JSON.parse(data) : [...DEFAULT_STATUSES];
+  }
+
+  saveStatuses(statuses: string[]): void {
+    localStorage.setItem(STATUSES_KEY, JSON.stringify(statuses));
+  }
+
   // ── Sample Data ─────────────────────────────────────────────────
 
   private initSampleCustomers(): Customer[] {
@@ -273,11 +300,12 @@ export class StorageService {
     this.saveCustomers(customers);
     // seed sample orders into IDB
     const orders: Order[] = [
-      { id: 'o1', customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Shirt',  quantity: 2, price: '1200', dueDate: '2025-08-10', status: 'In Progress', measurements: { chest: '40', waist: '36', shoulder: '17', sleeveLength: '25', length: '30' }, notes: 'White fabric', createdAt: new Date().toISOString() },
-      { id: 'o2', customerId: 'c2', customerName: 'Sara Ali',   dressType: 'Blouse', quantity: 1, price: '800',  dueDate: '2025-08-05', status: 'Ready',       measurements: { chest: '36', waist: '30', shoulder: '14', sleeveLength: '22', length: '18' }, notes: 'Silk fabric', createdAt: new Date().toISOString() },
-      { id: 'o3', customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Pant',   quantity: 1, price: '600',  dueDate: '2025-08-15', status: 'Pending',     measurements: { waist: '34', hip: '40', length: '42' },                                       notes: '',            createdAt: new Date().toISOString() },
+      { id: 'o1', orderNo: 1, customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Shirt',  quantity: 2, price: '1200', dueDate: '2025-08-10', status: 'In Progress', measurements: { chest: '40', waist: '36', shoulder: '17', sleeveLength: '25', length: '30' }, notes: 'White fabric', createdAt: new Date().toISOString() },
+      { id: 'o2', orderNo: 2, customerId: 'c2', customerName: 'Sara Ali',   dressType: 'Blouse', quantity: 1, price: '800',  dueDate: '2025-08-05', status: 'Ready',       measurements: { chest: '36', waist: '30', shoulder: '14', sleeveLength: '22', length: '18' }, notes: 'Silk fabric', createdAt: new Date().toISOString() },
+      { id: 'o3', orderNo: 3, customerId: 'c1', customerName: 'Ahmed Khan', dressType: 'Pant',   quantity: 1, price: '600',  dueDate: '2025-08-15', status: 'Pending',     measurements: { waist: '34', hip: '40', length: '42' },                                       notes: '',            createdAt: new Date().toISOString() },
     ];
     this.idb.bulkSaveOrders(orders);
+    localStorage.setItem('tailor_order_seq', '3');
     this._ordersCache = orders;
     return customers;
   }

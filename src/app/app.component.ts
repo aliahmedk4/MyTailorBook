@@ -44,6 +44,7 @@ export class AppComponent implements OnInit {
     const CHUNK   = 500;
     let created   = 0;
     const batch: any[] = [];
+    let seq = parseInt(localStorage.getItem('tailor_order_seq') || '0', 10);
 
     const processChunk = async () => {
       const end = Math.min(created + CHUNK, this.TOTAL);
@@ -51,10 +52,13 @@ export class AppComponent implements OnInit {
         const customer  = rand(customers);
         const dressType = rand(dressTypes);
         const due = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000);
+        const ordered = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000);
+        seq++;
         batch.push({
-          id: genId(), customerId: customer.id, customerName: customer.name, dressType,
+          id: genId(), orderNo: seq, customerId: customer.id, customerName: customer.name, dressType,
           quantity: Math.ceil(Math.random() * 3),
           price: String(Math.floor(Math.random() * 4000) + 500),
+          orderedDate: ordered.toISOString().split('T')[0],
           dueDate: due.toISOString().split('T')[0],
           status: rand(statuses),
           measurements: {
@@ -75,6 +79,7 @@ export class AppComponent implements OnInit {
         setTimeout(processChunk, 0);
       } else {
         await this.idb.bulkSaveOrders(batch); // final flush
+        localStorage.setItem('tailor_order_seq', seq.toString()); // persist counter
         this.storage['_ordersCache'] = null;  // invalidate cache
         this.dummyResult  = `✅ ${this.TOTAL} orders written to IndexedDB. No localStorage used.`;
         this.dummyLoading = false;
