@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { StorageService } from '../../services/storage.service';
+import { PdfService } from '../../services/pdf.service';
 import { Customer } from '../../models/customer.model';
 import { DressMeasurement } from '../../models/dress-measurement.model';
 import { Order, OrderStatus } from '../../models/order.model';
@@ -32,6 +33,7 @@ export class CustomerDetailPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private storage: StorageService,
+    private pdf: PdfService,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController
   ) {}
@@ -88,6 +90,21 @@ export class CustomerDetailPage implements OnInit {
       'Ready': 'badge-ready', 'Delivered': 'badge-delivered'
     };
     return map[status];
+  }
+
+  async savePdf() {
+    if (!this.customer) return;
+    try {
+      await this.pdf.saveCustomerPdf(this.customer, this.allOrders);
+      this.showToast('PDF saved to Documents');
+    } catch (e: any) { this.showToast(e.message || 'Failed to save PDF'); }
+  }
+
+  async shareWhatsApp() {
+    if (!this.customer) return;
+    try {
+      await this.pdf.shareCustomerPdfOnWhatsApp(this.customer, this.allOrders);
+    } catch (e: any) { this.showToast(e.message || 'Failed to share'); }
   }
 
   async confirmDelete(m: DressMeasurement) {

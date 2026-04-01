@@ -1,5 +1,28 @@
-.status-list {
-  padding: 0 14px 8px;
+.info-card {
+  margin: 0 14px 8px;
+  background: var(--t-surface);
+  border-radius: 18px;
+  border: 1px solid var(--t-border);
+  box-shadow: var(--t-shadow-sm);
+  overflow: hidden;
+}
+
+.info-item {
+  --background: transparent;
+  --padding-start: 14px;
+  .info-icon { color: #6c63ff; font-size: 18px; }
+}
+
+.save-info-wrap { padding: 12px 14px; }
+
+.save-info-btn {
+  --background: linear-gradient(135deg, #6c63ff, #a78bfa);
+  --border-radius: 14px;
+  --box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+  font-weight: 700;
+}
+
+.status-list {  padding: 0 14px 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;

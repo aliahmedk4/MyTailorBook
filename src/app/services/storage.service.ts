@@ -5,10 +5,19 @@ import { Order, OrderStatus } from '../models/order.model';
 import { DressConfig, MeasurementField } from '../models/dress-config.model';
 import { IdbService } from './idb.service';
 
-const CUSTOMERS_KEY     = 'tailor_customers';
-const DRESS_CONFIGS_KEY = 'tailor_dress_configs';
+const CUSTOMERS_KEY      = 'tailor_customers';
+const DRESS_CONFIGS_KEY  = 'tailor_dress_configs';
 const DEFAULT_STATUS_KEY = 'tailor_default_status';
 const STATUSES_KEY       = 'tailor_statuses';
+const TAILOR_INFO_KEY    = 'tailor_info';
+
+export interface TailorInfo {
+  name: string;
+  address: string;
+  contact: string;
+  email: string;
+  tagline: string;
+}
 
 const DEFAULT_STATUSES = ['Pending', 'In Progress', 'Ready', 'Delivered'];
 
@@ -58,8 +67,8 @@ export class StorageService {
 
   getCustomers(): Customer[] {
     const data = localStorage.getItem(CUSTOMERS_KEY);
-    if (data) return JSON.parse(data);
-    return this.initSampleCustomers();
+    return data ? JSON.parse(data) : [];
+    // return this.initSampleCustomers();
   }
 
   private saveCustomers(c: Customer[]): void {
@@ -283,6 +292,17 @@ export class StorageService {
 
   saveStatuses(statuses: string[]): void {
     localStorage.setItem(STATUSES_KEY, JSON.stringify(statuses));
+  }
+
+  // ── Tailor Info ─────────────────────────────────────────────────
+
+  getTailorInfo(): TailorInfo {
+    const data = localStorage.getItem(TAILOR_INFO_KEY);
+    return data ? JSON.parse(data) : { name: 'My Tailor', address: '', contact: '', email: '', tagline: '' };
+  }
+
+  saveTailorInfo(info: TailorInfo): void {
+    localStorage.setItem(TAILOR_INFO_KEY, JSON.stringify(info));
   }
 
   // ── Sample Data ─────────────────────────────────────────────────

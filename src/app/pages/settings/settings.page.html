@@ -9,6 +9,47 @@
 
 <ion-content>
 
+  <!-- Tailor / Shop Info -->
+  <div class="section-header">
+    <div class="section-info">
+      <h2>Shop Info</h2>
+      <p>Used on generated PDFs</p>
+    </div>
+  </div>
+  <div class="info-card">
+    <ion-item lines="inset" class="info-item">
+      <ion-icon name="storefront-outline" slot="start" class="info-icon"></ion-icon>
+      <ion-label position="stacked">Tailor / Shop Name</ion-label>
+      <ion-input [(ngModel)]="tailorInfo.name" placeholder="e.g. Ali Tailor House"></ion-input>
+    </ion-item>
+    <ion-item lines="inset" class="info-item">
+      <ion-icon name="sparkles-outline" slot="start" class="info-icon"></ion-icon>
+      <ion-label position="stacked">Tagline</ion-label>
+      <ion-input [(ngModel)]="tailorInfo.tagline" placeholder="e.g. Stitching Excellence Since 2010"></ion-input>
+    </ion-item>
+    <ion-item lines="inset" class="info-item">
+      <ion-icon name="call-outline" slot="start" class="info-icon"></ion-icon>
+      <ion-label position="stacked">Contact Number</ion-label>
+      <ion-input [(ngModel)]="tailorInfo.contact" type="tel" placeholder="e.g. 0300-1234567"></ion-input>
+    </ion-item>
+    <ion-item lines="inset" class="info-item">
+      <ion-icon name="mail-outline" slot="start" class="info-icon"></ion-icon>
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input [(ngModel)]="tailorInfo.email" type="email" placeholder="e.g. ali@tailor.com"></ion-input>
+    </ion-item>
+    <ion-item lines="none" class="info-item">
+      <ion-icon name="location-outline" slot="start" class="info-icon"></ion-icon>
+      <ion-label position="stacked">Address</ion-label>
+      <ion-input [(ngModel)]="tailorInfo.address" placeholder="e.g. Shop 5, Main Bazaar, Lahore"></ion-input>
+    </ion-item>
+    <div class="save-info-wrap">
+      <ion-button expand="block" class="save-info-btn" (click)="saveTailorInfo()">
+        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+        Save Shop Info
+      </ion-button>
+    </div>
+  </div>
+
   <!-- Default Status -->
   <div class="section-header">
     <div class="section-info">

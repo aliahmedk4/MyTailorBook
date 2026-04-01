@@ -5,6 +5,12 @@
     </ion-buttons>
     <ion-title>{{ customer?.name }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="shareWhatsApp()" class="header-action-btn">
+        <ion-icon slot="icon-only" name="logo-whatsapp"></ion-icon>
+      </ion-button>
+      <ion-button (click)="savePdf()" class="header-action-btn">
+        <ion-icon slot="icon-only" name="document-outline"></ion-icon>
+      </ion-button>
       <ion-button [routerLink]="['/add-customer', customerId]" class="header-edit-btn">
         <ion-icon slot="icon-only" name="create-outline"></ion-icon>
       </ion-button>

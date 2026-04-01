@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController, ToastController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { StorageService } from '../../services/storage.service';
+import { PdfService } from '../../services/pdf.service';
 import { Customer } from '../../models/customer.model';
 import { OrderDressItem, OrderStatus } from '../../models/order.model';
 import { DressConfig, MeasurementField } from '../../models/dress-config.model';
@@ -37,12 +38,16 @@ export class AddOrderPage implements OnInit {
   promptTargetIndex = 0;
   previewOrderNo = parseInt(localStorage.getItem('tailor_order_seq') || '0', 10) + 1;
   dressEntries: DressEntry[] = [];
+  zoomedImage: string | null = null;
+
+  zoomImage(src: string) { this.zoomedImage = src; }
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private storage: StorageService,
+    private pdfService: PdfService,
     private toastCtrl: ToastController,
     private actionSheetCtrl: ActionSheetController
   ) {}
@@ -244,20 +249,56 @@ export class AddOrderPage implements OnInit {
     const sheet = await this.actionSheetCtrl.create({
       header: 'Order Actions',
       buttons: [
-        { text: 'Print / Save PDF',  icon: 'print-outline',   handler: () => this.printPdf() },
-        { text: 'Send via WhatsApp', icon: 'logo-whatsapp',   handler: () => this.sendWhatsApp() },
-        { text: 'Cancel', role: 'cancel', icon: 'close-outline' }
+        { text: 'Save as PDF',             icon: 'document-outline',  handler: () => this.savePdf() },
+        { text: 'Send PDF via WhatsApp',   icon: 'logo-whatsapp',     handler: () => this.sendWhatsAppPdf() },
+        { text: 'Send Text via WhatsApp',  icon: 'chatbubble-outline', handler: () => this.sendWhatsApp() },
+        { text: 'Cancel', role: 'cancel',  icon: 'close-outline' }
       ]
     });
     await sheet.present();
   }
 
-  printPdf() {
-    const win = window.open('', '_blank', 'width=820,height=960');
-    if (!win) return;
-    win.document.write(this.buildOrderHtml());
-    win.document.close();
-    win.onload = () => { win.focus(); win.print(); };
+  async savePdf() {
+    const order = await this.currentOrderSnapshot();
+    if (!order) return;
+    try {
+      await this.pdfService.saveOrderPdf(order, this.customer);
+    } catch (e: any) {
+      const t = await this.toastCtrl.create({ message: e.message || 'Failed to save PDF', duration: 2500, color: 'danger' });
+      await t.present();
+    }
+  }
+
+  async sendWhatsAppPdf() {
+    const order = await this.currentOrderSnapshot();
+    if (!order) return;
+    try {
+      await this.pdfService.shareOrderPdfOnWhatsApp(order, this.customer);
+    } catch (e: any) {
+      const t = await this.toastCtrl.create({ message: e.message || 'Failed to share PDF', duration: 2500, color: 'danger' });
+      await t.present();
+    }
+  }
+
+  // builds a temporary Order object from current form state for PDF generation
+  private async currentOrderSnapshot(): Promise<any> {
+    const v = this.form.value;
+    return {
+      id: this.orderId,
+      orderNo: this.previewOrderNo,
+      customerId: v.customerId,
+      customerName: this.customer?.name || '',
+      dressType: this.dressEntries[0]?.dressType || '',
+      quantity: v.quantity,
+      price: v.price,
+      orderedDate: v.orderedDate,
+      dueDate: v.dueDate,
+      status: v.status,
+      measurements: this.dressEntries[0]?.measurements || {},
+      dressItems: this.dressEntries.map(e => ({ dressType: e.dressType, measurements: e.measurements })),
+      notes: v.notes,
+      createdAt: new Date().toISOString(),
+    };
   }
 
   sendWhatsApp() {

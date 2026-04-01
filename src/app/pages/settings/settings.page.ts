@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
-import { StorageService } from '../../services/storage.service';
+import { StorageService, TailorInfo } from '../../services/storage.service';
 import { DressConfig, MeasurementField } from '../../models/dress-config.model';
 import { OrderStatus } from '../../models/order.model';
 
@@ -11,6 +11,7 @@ import { OrderStatus } from '../../models/order.model';
   standalone: false,
 })
 export class SettingsPage implements OnInit {
+  tailorInfo!: TailorInfo;
   configs: DressConfig[] = [];
   expandedId: string | null = null;
   statuses: string[] = [];
@@ -25,9 +26,15 @@ export class SettingsPage implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
+    this.tailorInfo = this.storage.getTailorInfo();
     this.configs = this.storage.getDressConfigs();
     this.defaultStatus = this.storage.getDefaultStatus();
     this.statuses = this.storage.getStatuses();
+  }
+
+  saveTailorInfo() {
+    this.storage.saveTailorInfo(this.tailorInfo);
+    this.toast('Shop info saved');
   }
 
   setDefaultStatus(status: OrderStatus) {

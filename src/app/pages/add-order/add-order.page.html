@@ -134,23 +134,18 @@
             interface="action-sheet" class="entry-type-select">
             <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
           </ion-select>
+          <!-- Thumbnail -->
+          <div class="thumb-wrap" (click)="entry.imagePreview ? zoomImage(entry.imagePreview) : pickImageForEntry(i)">
+            <img *ngIf="entry.imagePreview" [src]="entry.imagePreview" class="thumb-img" alt=""/>
+            <div *ngIf="!entry.imagePreview" class="thumb-placeholder">
+              <ion-icon name="camera-outline"></ion-icon>
+            </div>
+            <button *ngIf="entry.imagePreview" type="button" class="thumb-change"
+              (click)="$event.stopPropagation(); pickImageForEntry(i)">
+              <ion-icon name="pencil-outline"></ion-icon>
+            </button>
+          </div>
           <button type="button" class="remove-entry-btn" (click)="removeDressEntry(i)" *ngIf="dressEntries.length > 1">
-            <ion-icon name="trash-outline"></ion-icon>
-          </button>
-        </div>
-
-        <!-- Image -->
-        <div class="entry-image-wrap" (click)="pickImageForEntry(i)">
-          <img *ngIf="entry.imagePreview" [src]="entry.imagePreview" class="entry-img" alt="dress"/>
-          <div *ngIf="!entry.imagePreview" class="entry-img-placeholder">
-            <ion-icon name="camera-outline"></ion-icon>
-            <span>Add Photo</span>
-          </div>
-          <div *ngIf="entry.imagePreview" class="entry-img-overlay">
-            <ion-icon name="camera-outline"></ion-icon>
-          </div>
-          <button *ngIf="entry.imagePreview" type="button" class="remove-img-fab"
-            (click)="$event.stopPropagation(); removeImageForEntry(i)">
             <ion-icon name="trash-outline"></ion-icon>
           </button>
         </div>
@@ -188,4 +183,13 @@
 
     </div>
   </form>
+
+  <!-- Image Zoom Modal -->
+  <div class="zoom-backdrop" *ngIf="zoomedImage" (click)="zoomedImage = null">
+    <img [src]="zoomedImage" class="zoom-img" alt=""/>
+    <button class="zoom-close" (click)="zoomedImage = null">
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+  </div>
+
 </ion-content>
