@@ -1,11 +1,12 @@
-/// <reference types="google.accounts" />
+ /// <reference types="google.accounts" />
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import { Order } from '../models/order.model';
 
-const ANDROID_CLIENT_ID  = '698576182522-049gdgch1cc0d3tpfkfsceeugmuh4tip.apps.googleusercontent.com';
+// const ANDROID_CLIENT_ID  = '698576182522-049gdgch1cc0d3tpfkfsceeugmuh4tip.apps.googleusercontent.com';
+const ANDROID_CLIENT_ID      = '698576182522-ca5o3snq3bfopn0b2nibqh5tq08b7tog.apps.googleusercontent.com';
 const WEB_CLIENT_ID      = '698576182522-ca5o3snq3bfopn0b2nibqh5tq08b7tog.apps.googleusercontent.com';
 const SCOPE              = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 const BACKUP_FILENAME    = 'mytailorbook_backup.json';

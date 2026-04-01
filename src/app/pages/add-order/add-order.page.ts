@@ -57,6 +57,7 @@ export class AddOrderPage implements OnInit {
       quantity: [1, [Validators.required, Validators.min(1)]],
       price: [''],
       dueDate: [''],
+      orderDate: [new Date().toISOString().split('T')[0]],
       status: ['Pending', Validators.required],
       notes: ['']
     });
@@ -72,7 +73,7 @@ export class AddOrderPage implements OnInit {
           customerId: order.customerId,
           dressType: order.dressType,
           quantity: order.quantity, price: order.price || '',
-          dueDate: order.dueDate || '', status: order.status,
+          dueDate: order.dueDate || '', orderDate: order.orderDate || '', status: order.status,
           notes: order.notes || ''
         });
         this.customerId = order.customerId;
@@ -190,7 +191,7 @@ export class AddOrderPage implements OnInit {
       customerName: selectedCustomer?.name || '',
       dressType: v.dressType,
       quantity: v.quantity, price: v.price,
-      dueDate: v.dueDate, status: v.status as OrderStatus,
+      dueDate: v.dueDate, orderDate: v.orderDate, status: v.status as OrderStatus,
       measurements, notes: v.notes,
       imageUrl: this.imagePreview || undefined
     };

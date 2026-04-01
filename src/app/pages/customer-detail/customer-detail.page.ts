@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { StorageService } from '../../services/storage.service';
@@ -13,10 +13,15 @@ import { Order, OrderStatus } from '../../models/order.model';
   standalone: false,
 })
 export class CustomerDetailPage implements OnInit {
+  @ViewChild('ordersScroll') ordersScrollRef!: ElementRef<HTMLDivElement>;
+
   customer: Customer | undefined;
   customerId = '';
   orders: Order[] = [];
+  allOrders: Order[] = [];
   orderCount = 0;
+  private page = 0;
+  private readonly PAGE_SIZE = 20;
 
   labelMap: Record<string, string> = {
     chest: 'Chest', waist: 'Waist', hip: 'Hip',
@@ -43,10 +48,31 @@ export class CustomerDetailPage implements OnInit {
     const c = this.storage.getCustomer(this.customerId);
     if (c) {
       this.customer = c;
-      this.orders = this.storage.getOrdersForCustomer(this.customerId);
-      this.orderCount = this.orders.length;
+      this.allOrders = this.storage.getOrdersForCustomer(this.customerId)
+        .sort((a, b) => {
+          const da = a.orderDate || a.createdAt;
+          const db = b.orderDate || b.createdAt;
+          return new Date(db).getTime() - new Date(da).getTime();
+        });
+      this.orderCount = this.allOrders.length;
+      this.page = 0;
+      this.orders = this.allOrders.slice(0, this.PAGE_SIZE);
     } else {
       this.router.navigateByUrl('/home');
+    }
+  }
+
+  loadMore() {
+    if (this.orders.length >= this.allOrders.length) return;
+    this.page++;
+    const next = this.allOrders.slice(this.page * this.PAGE_SIZE, (this.page + 1) * this.PAGE_SIZE);
+    this.orders = [...this.orders, ...next];
+  }
+
+  onOrdersScroll(event: Event) {
+    const el = event.target as HTMLDivElement;
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 40) {
+      this.loadMore();
     }
   }
 

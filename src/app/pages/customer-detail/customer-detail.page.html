@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>{{ customer?.name }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button [routerLink]="['/add-customer', customerId]">
+      <ion-button [routerLink]="['/add-customer', customerId]" class="header-edit-btn">
         <ion-icon slot="icon-only" name="create-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -35,17 +35,36 @@
 
   <!-- Orders Section -->
   <div class="section-label ion-padding-horizontal" *ngIf="orders.length > 0">Current Orders</div>
-  <div class="orders-scroll" *ngIf="orders.length > 0">
-    <div class="order-chip" *ngFor="let o of orders" [routerLink]="['/add-order', customerId, o.id]">
-      <span class="oc-type">{{ o.dressType }}</span>
-      <ion-badge [class]="badgeClass(o.status)">{{ o.status }}</ion-badge>
-      <span class="oc-date" *ngIf="o.dueDate">{{ o.dueDate }}</span>
+  <div class="orders-list" *ngIf="orders.length > 0" #ordersScroll (scroll)="onOrdersScroll($event)">
+    <div class="order-card" *ngFor="let o of orders" [routerLink]="['/add-order', customerId, o.id]">
+      <div class="oc-accent" [class]="'oc-accent-' + badgeClass(o.status)"></div>
+      <div class="oc-body">
+        <div class="oc-avatar">{{ o.dressType.charAt(0).toUpperCase() }}</div>
+        <div class="oc-top">
+          <span class="oc-type">{{ o.dressType }}</span>
+          <ion-badge [class]="'status-badge ' + badgeClass(o.status)">{{ o.status }}</ion-badge>
+        </div>
+        <div class="oc-bottom">
+          <span class="oc-meta" *ngIf="o.orderDate">
+            <ion-icon name="today-outline"></ion-icon> {{ o.orderDate }}
+          </span>
+          <span class="oc-meta" *ngIf="o.dueDate">
+            <ion-icon name="calendar-outline"></ion-icon> {{ o.dueDate }}
+          </span>
+          <span class="oc-meta" *ngIf="o.price">
+            <ion-icon name="cash-outline"></ion-icon> {{ o.price }}
+          </span>
+          <span class="oc-meta" *ngIf="o.quantity > 1">
+            <ion-icon name="layers-outline"></ion-icon> x{{ o.quantity }}
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- New Order Button -->
-  <div class="ion-padding-horizontal ion-padding-top">
-    <ion-button expand="block" fill="outline" [routerLink]="['/add-order', customerId, 'new']" class="new-order-btn">
+  <div class="new-order-wrap">
+    <ion-button expand="block" [routerLink]="['/add-order', customerId, 'new']" class="new-order-btn">
       <ion-icon slot="start" name="add-circle-outline"></ion-icon>
       New Order for {{ customer.name }}
     </ion-button>
@@ -85,7 +104,7 @@
   </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button [routerLink]="['/add-measurement', customerId, 'new']">
+    <ion-fab-button class="detail-fab" [routerLink]="['/add-measurement', customerId, 'new']">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

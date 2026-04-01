@@ -8,6 +8,7 @@ export interface Order {
   quantity: number;
   price?: string;
   dueDate?: string;
+  orderDate?: string;
   status: OrderStatus;
   measurements: Record<string, string>;
   notes?: string;
