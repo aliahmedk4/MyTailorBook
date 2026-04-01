@@ -1,68 +1,49 @@
-<ion-header>
+<ion-header class="ao-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/orders"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ isEdit ? 'Edit Order' : 'New Order' }}</ion-title>
+    <ion-title>#{{ previewOrderNo }}</ion-title>
+    <!-- <ion-title>{{ isEdit ? 'Edit Order' : 'New Order' }}</ion-title> -->
+    <!-- <div slot="end" class="order-no-badge">#{{ previewOrderNo }}</div> -->
+    <ion-buttons slot="end" *ngIf="isEdit">
+      <ion-button fill="clear" (click)="showShareSheet()">
+        <ion-icon slot="icon-only" name="share-social-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ao-content">
   <form [formGroup]="form" (ngSubmit)="save()">
 
-    <!-- Image Picker -->
-    <div class="image-section">
-      <div class="image-preview-wrap" (click)="pickImage()">
-        <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img" alt="order"/>
-        <div *ngIf="!imagePreview" class="image-placeholder">
-          <ion-icon name="camera-outline"></ion-icon>
-          <span>Add Photo</span>
-          <small>Tap to take or choose image</small>
-        </div>
-        <div *ngIf="imagePreview" class="image-overlay">
-          <ion-icon name="camera-outline"></ion-icon>
-          <span>Change</span>
-        </div>
-      </div>
-      <ion-button *ngIf="imagePreview" fill="clear" color="danger" size="small"
-        class="remove-img-btn" (click)="removeImage()">
-        <ion-icon slot="start" name="trash-outline"></ion-icon> Remove
-      </ion-button>
-    </div>
-
-    <!-- Measure Estimate Prompt -->
+    <!-- Measure Estimate Sheet -->
     <div class="measure-prompt-backdrop" *ngIf="showMeasurePrompt" (click)="dismissPrompt()"></div>
     <div class="measure-prompt-sheet" *ngIf="showMeasurePrompt">
       <div class="prompt-handle"></div>
-      <div class="prompt-title">
-        <ion-icon name="body-outline"></ion-icon>
-        Auto-fill Measurements
-      </div>
-      <p class="prompt-sub">Enter body info to estimate sizes from photo</p>
-
+      <div class="prompt-title"><ion-icon name="body-outline"></ion-icon> Auto-fill Measurements</div>
+      <p class="prompt-sub">Enter body info to estimate sizes</p>
       <div class="gender-toggle">
-        <button class="gender-btn" [class.active]="promptGender === 'male'" (click)="promptGender = 'male'">
+        <button type="button" class="gender-btn" [class.active]="promptGender==='male'" (click)="promptGender='male'">
           <ion-icon name="man-outline"></ion-icon> Male
         </button>
-        <button class="gender-btn" [class.active]="promptGender === 'female'" (click)="promptGender = 'female'">
+        <button type="button" class="gender-btn" [class.active]="promptGender==='female'" (click)="promptGender='female'">
           <ion-icon name="woman-outline"></ion-icon> Female
         </button>
       </div>
-
       <div class="prompt-inputs">
         <div class="prompt-field">
           <label>Height (cm)</label>
-          <input type="number" inputmode="numeric" placeholder="e.g. 170" [(ngModel)]="promptHeight"/>
+          <input type="number" inputmode="numeric" placeholder="e.g. 170" [(ngModel)]="promptHeight" [ngModelOptions]="{standalone:true}"/>
         </div>
         <div class="prompt-field">
           <label>Weight (kg)</label>
-          <input type="number" inputmode="numeric" placeholder="e.g. 70" [(ngModel)]="promptWeight"/>
+          <input type="number" inputmode="numeric" placeholder="e.g. 70" [(ngModel)]="promptWeight" [ngModelOptions]="{standalone:true}"/>
         </div>
       </div>
-
       <div class="prompt-actions">
-        <button class="btn-skip" (click)="dismissPrompt()">Skip</button>
-        <button class="btn-apply" (click)="applyEstimate()">
+        <button type="button" class="btn-skip" (click)="dismissPrompt()">Skip</button>
+        <button type="button" class="btn-apply" (click)="applyEstimate()">
           <ion-icon name="flash-outline"></ion-icon> Auto-fill
         </button>
       </div>
@@ -71,103 +52,133 @@
     <div class="form-body">
 
       <!-- Customer -->
-      <div class="field-group-label">Customer</div>
-      <div class="form-card">
-        <ion-item lines="none" class="form-item">
-          <ion-icon name="person-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-label position="stacked">Select Customer <span class="req">*</span></ion-label>
-          <ion-select formControlName="customerId" (ionChange)="onCustomerChange($event)"
-            interface="action-sheet" placeholder="Choose customer">
-            <ion-select-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </div>
-
-      <!-- Dress Details -->
-      <div class="field-group-label">Dress Details</div>
-      <div class="form-card">
-        <ion-item lines="none" class="form-item">
-          <ion-icon name="shirt-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-label position="stacked">Dress Type <span class="req">*</span></ion-label>
-          <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)" interface="action-sheet">
-            <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
-          </ion-select>
-        </ion-item>
+      <div class="section-label">Customer</div>
+      <div class="modern-card">
+        <div class="mfield">
+          <div class="mfield-icon"><ion-icon name="person-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Customer <span class="req">*</span></span>
+            <ion-select formControlName="customerId" (ionChange)="onCustomerChange($event)"
+              interface="action-sheet" placeholder="Choose customer" class="mfield-select">
+              <ion-select-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</ion-select-option>
+            </ion-select>
+          </div>
+        </div>
       </div>
 
       <!-- Order Info -->
-      <div class="field-group-label">Order Info</div>
-      <div class="form-card">
-        <ion-grid class="ion-no-padding">
-          <ion-row>
-            <ion-col size="6">
-              <ion-item lines="none" class="form-item">
-                <ion-icon name="layers-outline" slot="start" class="field-icon"></ion-icon>
-                <ion-label position="stacked">Qty <span class="req">*</span></ion-label>
-                <ion-input formControlName="quantity" type="number" inputmode="numeric" min="1"></ion-input>
-              </ion-item>
-            </ion-col>
-            <ion-col size="6">
-              <ion-item lines="none" class="form-item">
-                <ion-icon name="cash-outline" slot="start" class="field-icon"></ion-icon>
-                <ion-label position="stacked">Price (₨)</ion-label>
-                <ion-input formControlName="price" type="number" inputmode="decimal" placeholder="0"></ion-input>
-              </ion-item>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
+      <div class="section-label">Order Info</div>
+      <div class="modern-card">
+        <div class="two-col-row">
+          <div class="mfield half-field">
+            <div class="mfield-icon"><ion-icon name="layers-outline"></ion-icon></div>
+            <div class="mfield-inner">
+              <span class="mfield-lbl">Qty <span class="req">*</span></span>
+              <ion-input formControlName="quantity" type="number" inputmode="numeric" min="1" class="mfield-input"></ion-input>
+            </div>
+          </div>
+          <div class="col-divider"></div>
+          <div class="mfield half-field">
+            <div class="mfield-icon"><ion-icon name="cash-outline"></ion-icon></div>
+            <div class="mfield-inner">
+              <span class="mfield-lbl">Price (₨)</span>
+              <ion-input formControlName="price" type="number" inputmode="decimal" placeholder="0" class="mfield-input"></ion-input>
+            </div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="two-col-row">
+          <div class="mfield half-field">
+            <div class="mfield-icon"><ion-icon name="today-outline"></ion-icon></div>
+            <div class="mfield-inner">
+              <span class="mfield-lbl">Order Date</span>
+              <ion-input formControlName="orderedDate" type="date" class="mfield-input"></ion-input>
+            </div>
+          </div>
+          <div class="col-divider"></div>
+          <div class="mfield half-field">
+            <div class="mfield-icon"><ion-icon name="calendar-outline"></ion-icon></div>
+            <div class="mfield-inner">
+              <span class="mfield-lbl">Due Date</span>
+              <ion-input formControlName="dueDate" type="date" class="mfield-input"></ion-input>
+            </div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="mfield">
+          <div class="mfield-icon"><ion-icon name="flag-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Status</span>
+            <ion-select formControlName="status" interface="action-sheet" class="mfield-select">
+              <ion-select-option *ngFor="let s of statuses" [value]="s">{{ s }}</ion-select-option>
+            </ion-select>
+          </div>
+        </div>
+      </div>
 
-        <ion-item lines="inset" class="form-item">
-          <ion-icon name="today-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-label position="stacked">Order Date</ion-label>
-          <ion-input formControlName="orderDate" type="date"></ion-input>
-        </ion-item>
+      <!-- Dress Items -->
+      <div class="section-label-row">
+        <span class="section-label" style="padding:0">Dress Items</span>
+        <button type="button" class="add-dress-btn" (click)="addDressEntry()">
+          <ion-icon name="add-circle-outline"></ion-icon> Add Dress
+        </button>
+      </div>
 
-        <ion-item lines="inset" class="form-item">
-          <ion-icon name="calendar-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-label position="stacked">Due Date</ion-label>
-          <ion-input formControlName="dueDate" type="date"></ion-input>
-        </ion-item>
+      <div class="dress-entry-card" *ngFor="let entry of dressEntries; let i = index">
 
-        <ion-item lines="none" class="form-item">
-          <ion-icon name="flag-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-label position="stacked">Status</ion-label>
-          <ion-select formControlName="status" interface="action-sheet">
-            <ion-select-option *ngFor="let s of statuses" [value]="s">{{ s }}</ion-select-option>
+        <!-- Entry header -->
+        <div class="entry-header">
+          <div class="entry-num">{{ i + 1 }}</div>
+          <ion-select [(ngModel)]="entry.dressType" [ngModelOptions]="{standalone:true}"
+            (ionChange)="onEntryDressTypeChange(i, $event)"
+            interface="action-sheet" class="entry-type-select">
+            <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
           </ion-select>
-        </ion-item>
-      </div>
+          <button type="button" class="remove-entry-btn" (click)="removeDressEntry(i)" *ngIf="dressEntries.length > 1">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
 
-      <!-- Measurements -->
-      <div class="field-group-label">
-        Measurements (inches)
-        <span class="autofill-hint" *ngIf="customer">· auto-filled if saved</span>
-      </div>
-      <div class="form-card measurements-card" *ngIf="measurementFields.length > 0">
-        <ion-grid class="ion-no-padding">
-          <ion-row>
-            <ion-col size="4" *ngFor="let f of measurementFields">
-              <div class="measure-field">
-                <ion-input [formControlName]="f.key" type="number" inputmode="decimal"
-                  placeholder="0" class="measure-input"></ion-input>
-                <span class="measure-label">{{ f.label }}</span>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </div>
-      <div class="form-card" *ngIf="measurementFields.length === 0">
-        <p class="no-fields-hint">No measurement fields for this dress type. Add them in Settings.</p>
+        <!-- Image -->
+        <div class="entry-image-wrap" (click)="pickImageForEntry(i)">
+          <img *ngIf="entry.imagePreview" [src]="entry.imagePreview" class="entry-img" alt="dress"/>
+          <div *ngIf="!entry.imagePreview" class="entry-img-placeholder">
+            <ion-icon name="camera-outline"></ion-icon>
+            <span>Add Photo</span>
+          </div>
+          <div *ngIf="entry.imagePreview" class="entry-img-overlay">
+            <ion-icon name="camera-outline"></ion-icon>
+          </div>
+          <button *ngIf="entry.imagePreview" type="button" class="remove-img-fab"
+            (click)="$event.stopPropagation(); removeImageForEntry(i)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+
+        <!-- Measurements -->
+        <div class="entry-measure-grid" *ngIf="entry.fields.length > 0">
+          <div class="measure-cell" *ngFor="let f of entry.fields">
+            <input type="number" inputmode="decimal" placeholder="0" class="measure-native-input"
+              [(ngModel)]="entry.measurements[f.key]" [ngModelOptions]="{standalone:true}"/>
+            <span class="measure-label">{{ f.label }}</span>
+          </div>
+        </div>
+        <div class="no-fields-hint" *ngIf="entry.fields.length === 0">
+          No measurement fields for this dress type. Add them in Settings.
+        </div>
+
       </div>
 
       <!-- Notes -->
-      <div class="field-group-label">Notes</div>
-      <div class="form-card">
-        <ion-item lines="none" class="form-item">
-          <ion-icon name="document-text-outline" slot="start" class="field-icon"></ion-icon>
-          <ion-textarea formControlName="notes" placeholder="Fabric, fit preference, special instructions..."
-            rows="3" autoGrow></ion-textarea>
-        </ion-item>
+      <div class="section-label">Notes</div>
+      <div class="modern-card">
+        <div class="mfield notes-field">
+          <div class="mfield-icon"><ion-icon name="document-text-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <ion-textarea formControlName="notes" placeholder="Fabric, fit preference, special instructions..."
+              rows="3" autoGrow class="mfield-textarea"></ion-textarea>
+          </div>
+        </div>
       </div>
 
       <ion-button expand="block" type="submit" class="save-btn" [disabled]="form.invalid">

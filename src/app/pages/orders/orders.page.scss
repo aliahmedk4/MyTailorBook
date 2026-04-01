@@ -286,6 +286,18 @@ $g: linear-gradient(135deg, #0f172a 0%, #0ea5e9 60%, #06b6d4 100%);
   ion-icon { font-size: 12px; color: #0ea5e9; }
 }
 
+.order-no {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 800;
+  color: #6c63ff;
+  background: rgba(108,99,255,0.1);
+  padding: 2px 7px;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
 .order-footer { display: flex; gap: 12px; flex-wrap: wrap; }
 
 .footer-price, .footer-date {
@@ -343,3 +355,7 @@ $g: linear-gradient(135deg, #0f172a 0%, #0ea5e9 60%, #06b6d4 100%);
   transition: transform 0.2s ease;
   &:active { transform: scale(0.9); }
 }
+
+// ── FAB safe positioning ────────────────────────────────────────────
+ion-fab[vertical="bottom"] { bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+ion-fab[horizontal="end"]  { right: 24px; }

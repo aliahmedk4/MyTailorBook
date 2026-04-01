@@ -22,24 +22,14 @@
 
   <div class="stat-pills">
     <div class="stat-pill" [class.active]="filterStatus==='All'" (click)="filterStatus='All'; applyFilter()">
-      <span class="pill-num">{{ stats.total }}</span>
+      <span class="pill-num">{{ stats['total'] }}</span>
       <span class="pill-lbl">All</span>
     </div>
-    <div class="stat-pill pill-pending" [class.active]="filterStatus==='Pending'" (click)="filterStatus='Pending'; applyFilter()">
-      <span class="pill-num">{{ stats.pending }}</span>
-      <span class="pill-lbl">Pending</span>
-    </div>
-    <div class="stat-pill pill-progress" [class.active]="filterStatus==='In Progress'" (click)="filterStatus='In Progress'; applyFilter()">
-      <span class="pill-num">{{ stats.inProgress }}</span>
-      <span class="pill-lbl">Progress</span>
-    </div>
-    <div class="stat-pill pill-ready" [class.active]="filterStatus==='Ready'" (click)="filterStatus='Ready'; applyFilter()">
-      <span class="pill-num">{{ stats.ready }}</span>
-      <span class="pill-lbl">Ready</span>
-    </div>
-    <div class="stat-pill pill-done" [class.active]="filterStatus==='Delivered'" (click)="filterStatus='Delivered'; applyFilter()">
-      <span class="pill-num">{{ stats.delivered }}</span>
-      <span class="pill-lbl">Done</span>
+    <div class="stat-pill" *ngFor="let s of statuses"
+      [class.active]="filterStatus === s"
+      (click)="filterStatus = s; applyFilter()">
+      <span class="pill-num">{{ stats[s] || 0 }}</span>
+      <span class="pill-lbl">{{ s }}</span>
     </div>
   </div>
 
@@ -89,13 +79,14 @@
           <p class="order-dress">
             <ion-icon name="shirt-outline"></ion-icon>
             {{ order.dressType }} · Qty {{ order.quantity }}
+            <span class="order-no" *ngIf="order.orderNo">#{{ order.orderNo }}</span>
           </p>
           <div class="order-footer">
             <span class="footer-price" *ngIf="order.price">
               <ion-icon name="cash-outline"></ion-icon>₨ {{ order.price }}
             </span>
-            <span class="footer-date" *ngIf="order.dueDate">
-              <ion-icon name="calendar-outline"></ion-icon>{{ order.dueDate }}
+            <span class="footer-date" *ngIf="order.orderedDate">
+              <ion-icon name="calendar-outline"></ion-icon>{{ order.orderedDate }}
             </span>
           </div>
         </ion-label>

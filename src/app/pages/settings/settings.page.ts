@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
 import { StorageService } from '../../services/storage.service';
 import { DressConfig, MeasurementField } from '../../models/dress-config.model';
+import { OrderStatus } from '../../models/order.model';
 
 @Component({
   selector: 'app-settings',
@@ -12,6 +13,8 @@ import { DressConfig, MeasurementField } from '../../models/dress-config.model';
 export class SettingsPage implements OnInit {
   configs: DressConfig[] = [];
   expandedId: string | null = null;
+  statuses: string[] = [];
+  defaultStatus!: OrderStatus;
 
   constructor(
     private storage: StorageService,
@@ -21,7 +24,66 @@ export class SettingsPage implements OnInit {
 
   ngOnInit() { this.load(); }
 
-  load() { this.configs = this.storage.getDressConfigs(); }
+  load() {
+    this.configs = this.storage.getDressConfigs();
+    this.defaultStatus = this.storage.getDefaultStatus();
+    this.statuses = this.storage.getStatuses();
+  }
+
+  setDefaultStatus(status: OrderStatus) {
+    this.defaultStatus = status;
+    this.storage.setDefaultStatus(status);
+    this.toast(`Default status: "${status}"`);
+  }
+
+  async addStatus() {
+    const alert = await this.alertCtrl.create({
+      header: 'Add Status',
+      inputs: [{ name: 'name', type: 'text', placeholder: 'e.g. Cutting, Stitching' }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Add',
+          handler: (data) => {
+            const name = data.name?.trim();
+            if (!name) return false;
+            if (this.statuses.includes(name)) { this.toast('Already exists'); return false; }
+            const updated = [...this.statuses, name];
+            this.storage.saveStatuses(updated);
+            this.statuses = updated;
+            this.toast(`"${name}" added`);
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async removeStatus(status: string) {
+    if (status === 'Pending') { this.toast('Cannot remove Pending'); return; }
+    const alert = await this.alertCtrl.create({
+      header: `Remove "${status}"?`,
+      message: 'Existing orders with this status are not affected.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Remove', role: 'destructive',
+          handler: () => {
+            const updated = this.statuses.filter(s => s !== status);
+            this.storage.saveStatuses(updated);
+            this.statuses = updated;
+            if (this.defaultStatus === status) {
+              this.storage.setDefaultStatus('Pending');
+              this.defaultStatus = 'Pending';
+            }
+            this.toast(`"${status}" removed`);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
 
   toggle(id: string) {
     this.expandedId = this.expandedId === id ? null : id;

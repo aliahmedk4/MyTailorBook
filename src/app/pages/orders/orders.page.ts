@@ -26,7 +26,8 @@ export class OrdersPage {
 
   searchTerm    = '';
   filterStatus  = 'All';
-  stats         = { total: 0, pending: 0, inProgress: 0, ready: 0, delivered: 0 };
+  statuses: string[] = [];
+  stats: Record<string, number> = { total: 0 };
 
   constructor(
     private storage: StorageService,
@@ -35,7 +36,11 @@ export class OrdersPage {
     private toastCtrl: ToastController
   ) {}
 
-  ionViewWillEnter() { this.reload(); }
+  ionViewWillEnter() {
+    this.statuses = this.storage.getStatuses();
+    this.filterStatus = this.storage.getDefaultStatus();
+    this.reload();
+  }
 
   reload(event?: any) {
     this.storage.getOrdersAsync().then(() => {
@@ -50,7 +55,11 @@ export class OrdersPage {
 
   private buildMaster() {
     let list = this.storage.getOrders()
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => {
+        const da = a.orderedDate || a.createdAt;
+        const db = b.orderedDate || b.createdAt;
+        return new Date(db).getTime() - new Date(da).getTime();
+      });
 
     if (this.filterStatus !== 'All')
       list = list.filter(o => o.status === this.filterStatus);
@@ -113,21 +122,20 @@ export class OrdersPage {
 
   // ── Helpers ────────────────────────────────────────────────────
 
-  badgeClass(status: OrderStatus): string {
-    return ({ 'Pending': 'badge-pending', 'In Progress': 'badge-progress', 'Ready': 'badge-ready', 'Delivered': 'badge-delivered' } as any)[status];
+  statusKey(status: string): string {
+    return status.toLowerCase().replace(/\s+/g, '-');
   }
 
-  statusKey(status: OrderStatus): string {
-    return ({ 'Pending': 'pending', 'In Progress': 'progress', 'Ready': 'ready', 'Delivered': 'delivered' } as any)[status];
+  badgeClass(status: string): string {
+    return 'badge-' + this.statusKey(status);
   }
 
   async changeStatus(order: Order) {
-    const next: Record<OrderStatus, OrderStatus> = {
-      'Pending': 'In Progress', 'In Progress': 'Ready', 'Ready': 'Delivered', 'Delivered': 'Pending'
-    };
-    await this.storage.updateOrderStatus(order.id, next[order.status]);
+    const idx = this.statuses.indexOf(order.status);
+    const next = this.statuses[(idx + 1) % this.statuses.length];
+    await this.storage.updateOrderStatus(order.id, next);
     this.reload();
-    this.showToast(`Status → ${next[order.status]}`);
+    this.showToast(`Status → ${next}`);
   }
 
   async confirmDelete(order: Order) {
