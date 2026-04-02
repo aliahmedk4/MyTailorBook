@@ -92,19 +92,14 @@ export class CustomerDetailPage implements OnInit {
     return map[status];
   }
 
-  async savePdf() {
+  savePdf() {
     if (!this.customer) return;
-    try {
-      await this.pdf.saveCustomerPdf(this.customer, this.allOrders);
-      this.showToast('PDF saved to Documents');
-    } catch (e: any) { this.showToast(e.message || 'Failed to save PDF'); }
+    this.pdf.saveCustomerPdf(this.customer, this.allOrders);
   }
 
-  async shareWhatsApp() {
+  shareWhatsApp() {
     if (!this.customer) return;
-    try {
-      await this.pdf.shareCustomerPdfOnWhatsApp(this.customer, this.allOrders);
-    } catch (e: any) { this.showToast(e.message || 'Failed to share'); }
+    this.pdf.shareCustomerPdfOnWhatsApp(this.customer, this.allOrders);
   }
 
   async confirmDelete(m: DressMeasurement) {

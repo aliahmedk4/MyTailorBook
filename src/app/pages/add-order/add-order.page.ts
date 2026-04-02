@@ -261,23 +261,13 @@ export class AddOrderPage implements OnInit {
   async savePdf() {
     const order = await this.currentOrderSnapshot();
     if (!order) return;
-    try {
-      await this.pdfService.saveOrderPdf(order, this.customer);
-    } catch (e: any) {
-      const t = await this.toastCtrl.create({ message: e.message || 'Failed to save PDF', duration: 2500, color: 'danger' });
-      await t.present();
-    }
+    this.pdfService.saveOrderPdf(order, this.customer);
   }
 
   async sendWhatsAppPdf() {
     const order = await this.currentOrderSnapshot();
     if (!order) return;
-    try {
-      await this.pdfService.shareOrderPdfOnWhatsApp(order, this.customer);
-    } catch (e: any) {
-      const t = await this.toastCtrl.create({ message: e.message || 'Failed to share PDF', duration: 2500, color: 'danger' });
-      await t.present();
-    }
+    this.pdfService.shareOrderPdfOnWhatsApp(order, this.customer);
   }
 
   // builds a temporary Order object from current form state for PDF generation

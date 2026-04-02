@@ -1,62 +1,171 @@
-.info-card {
-  margin: 0 14px 8px;
-  background: var(--t-surface);
+.ao-content { --background: var(--ion-background-color); }
+
+.form-body { padding: 16px 14px calc(80px + env(safe-area-inset-bottom, 0px)); }
+
+// ── Section Label ──────────────────────────────────────────────────
+.section-label {
+  font-size: 11px; font-weight: 800; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--tailor-subtext, #94a3b8);
+  padding: 16px 2px 8px;
+}
+
+.section-label-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 2px 8px;
+}
+
+.section-hint {
+  font-size: 12px; color: var(--tailor-subtext, #94a3b8);
+  margin: -4px 2px 10px; padding: 0;
+}
+
+// ── Modern Card ────────────────────────────────────────────────────
+.modern-card {
+  background: var(--tailor-surface, #fff);
   border-radius: 18px;
-  border: 1px solid var(--t-border);
-  box-shadow: var(--t-shadow-sm);
+  border: 1px solid var(--tailor-border, #e2e8f0);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
   overflow: hidden;
 }
 
-.info-item {
-  --background: transparent;
-  --padding-start: 14px;
-  .info-icon { color: #6c63ff; font-size: 18px; }
+.card-divider {
+  height: 1px;
+  background: var(--tailor-border, #e2e8f0);
+  margin: 0 16px;
 }
 
-.save-info-wrap { padding: 12px 14px; }
-
-.save-info-btn {
-  --background: linear-gradient(135deg, #6c63ff, #a78bfa);
-  --border-radius: 14px;
-  --box-shadow: 0 4px 16px rgba(108,99,255,0.35);
-  font-weight: 700;
+// ── Field Row ──────────────────────────────────────────────────────
+.mfield {
+  display: flex; align-items: center;
+  padding: 14px 16px; gap: 12px; min-height: 62px;
 }
 
-.status-list {  padding: 0 14px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.mfield-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: rgba(108,99,255,0.1);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  ion-icon { font-size: 17px; color: #6c63ff; }
+
+  &.store-icon  { background: rgba(108,99,255,0.1); ion-icon { color: #6c63ff; } }
+  &.spark-icon  { background: rgba(245,158,11,0.1);  ion-icon { color: #f59e0b; } }
+  &.phone-icon  { background: rgba(16,185,129,0.1);  ion-icon { color: #10b981; } }
+  &.mail-icon   { background: rgba(14,165,233,0.1);  ion-icon { color: #0ea5e9; } }
+  &.loc-icon    { background: rgba(239,68,68,0.1);   ion-icon { color: #ef4444; } }
 }
 
-.status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--t-surface);
-  border: 1px solid var(--t-border);
+// ── Color Picker ───────────────────────────────────────────────────
+.color-picker-wrap {
+  position: relative;
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 12px; overflow: hidden;
+  border: 2px solid var(--tailor-border, #e2e8f0);
+  cursor: pointer;
+}
+
+.color-swatch {
+  position: absolute; inset: 0;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.color-native {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+  padding: 0; border: none;
+}
+
+// ── Size Slider ────────────────────────────────────────────────────
+.size-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 4px;
+}
+
+.size-lbl {
+  font-size: 11px; color: var(--tailor-subtext, #94a3b8);
+  white-space: nowrap; min-width: 60px;
+}
+
+.size-slider {
+  flex: 1; height: 4px; accent-color: #6c63ff;
+  cursor: pointer;
+}
+
+// ── PDF Preview ────────────────────────────────────────────────────
+.pdf-preview {
   border-radius: 14px;
-  padding: 4px 4px 4px 14px;
-  box-shadow: var(--t-shadow-sm);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+
+  .pp-brand {
+    font-weight: 900; letter-spacing: -0.3px; line-height: 1.2;
+  }
+
+  .pp-tagline {
+    margin-top: 3px; letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .pp-contact {
+    margin-top: 8px; font-size: 11px;
+  }
+}
+
+.mfield-inner {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+
+.mfield-lbl {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; color: var(--tailor-subtext, #94a3b8);
+}
+
+.mfield-input {
+  --padding-start: 0; --padding-end: 0;
+  --padding-top: 2px; --padding-bottom: 2px;
+  font-size: 15px; font-weight: 600;
+  color: var(--tailor-text, #1e293b);
+  min-height: 28px;
+}
+
+// ── Save Button ────────────────────────────────────────────────────
+.save-btn {
+  margin-top: 14px;
+  margin-bottom: 4px;
+  --border-radius: 16px;
+  --background: linear-gradient(135deg, #4c46c8, #6c63ff, #a78bfa);
+  --box-shadow: 0 8px 28px rgba(108,99,255,0.4);
+  font-weight: 800; font-size: 16px; height: 56px;
+}
+
+// ── Add Pill Button ────────────────────────────────────────────────
+.add-pill-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(14,165,233,0.1);
+  border: 1.5px solid rgba(14,165,233,0.3);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px; font-weight: 700; color: #0ea5e9;
+  cursor: pointer;
+  ion-icon { font-size: 15px; }
+}
+
+// ── Status List ────────────────────────────────────────────────────
+.status-row {
+  display: flex; align-items: center;
+  padding: 4px 8px 4px 16px;
+  position: relative;
 
   .status-row-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    cursor: pointer;
-    padding: 8px 0;
+    display: flex; align-items: center; gap: 10px;
+    flex: 1; cursor: pointer; padding: 10px 0;
   }
 
   .status-dot {
     width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-    &.dot-pending     { background: #f59e0b; }
-    &.dot-in-progress { background: #0ea5e9; }
-    &.dot-ready       { background: #10b981; }
-    &.dot-delivered   { background: #94a3b8; }
   }
 
   .status-name {
-    font-size: 14px; font-weight: 600; color: var(--t-text);
+    font-size: 14px; font-weight: 600; color: var(--tailor-text, #1e293b);
   }
 
   .default-tag {
@@ -65,133 +174,129 @@
     background: rgba(108,99,255,0.1);
     padding: 2px 8px; border-radius: 20px;
   }
-}
 
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 16px 12px;
-
-  h2 { margin: 0 0 2px; font-size: 18px; font-weight: 800; color: var(--t-text); }
-  p  { margin: 0; font-size: 12px; color: var(--t-subtext); }
-
-  .add-btn {
-    --background: linear-gradient(135deg, #0ea5e9, #06b6d4);
-    --border-radius: 12px;
-    font-weight: 700;
-    font-size: 13px;
+  .card-divider {
+    position: absolute; bottom: 0; left: 16px; right: 16px;
+    height: 1px; background: var(--tailor-border, #e2e8f0); margin: 0;
   }
 }
 
-.configs-list { padding: 0 14px 100px; display: flex; flex-direction: column; gap: 12px; }
-
-.config-card {
-  background: var(--t-surface);
-  border-radius: 18px;
-  border: 1px solid var(--t-border);
-  box-shadow: var(--t-shadow-sm);
-  overflow: hidden;
+.remove-status-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(239,68,68,0.08); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  ion-icon { font-size: 15px; color: #ef4444; }
+  &:disabled { opacity: 0.3; pointer-events: none; }
 }
 
+// ── Dress Configs ──────────────────────────────────────────────────
+.configs-list { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+
+.config-card { overflow: hidden; }
+
 .config-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 14px 10px 14px 16px;
-  cursor: pointer;
-  user-select: none;
+  cursor: pointer; user-select: none;
 
   .config-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 0;
+    display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
   }
 
   .config-badge {
-    font-size: 9px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    background: rgba(16,185,129,0.12);
-    color: #10b981;
-    flex-shrink: 0;
+    font-size: 9px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px;
+    background: rgba(16,185,129,0.12); color: #10b981; flex-shrink: 0;
     &.default-badge { background: rgba(14,165,233,0.12); color: #0ea5e9; }
   }
 
   .config-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--t-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 15px; font-weight: 700; color: var(--tailor-text, #1e293b);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  .field-count {
-    font-size: 11px;
-    color: var(--t-subtext);
-    flex-shrink: 0;
-  }
+  .field-count { font-size: 11px; color: var(--tailor-subtext, #94a3b8); flex-shrink: 0; }
 
-  .config-actions {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex-shrink: 0;
-  }
+  .config-actions { display: flex; align-items: center; flex-shrink: 0; }
 
-  .chevron {
-    font-size: 16px;
-    color: var(--t-subtext);
-    margin-left: 4px;
-  }
+  .chevron { font-size: 16px; color: var(--tailor-subtext, #94a3b8); margin-left: 4px; }
 }
 
+// ── Icon Buttons ───────────────────────────────────────────────────
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(108,99,255,0.08); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; margin-left: 4px;
+  ion-icon { font-size: 15px; color: #6c63ff; }
+  &.danger-btn { background: rgba(239,68,68,0.08); ion-icon { color: #ef4444; } }
+}
+
+// ── Fields Body ────────────────────────────────────────────────────
 .fields-body {
-  border-top: 1px solid var(--t-border);
-  padding: 12px 14px;
+  border-top: 1px solid var(--tailor-border, #e2e8f0);
+  padding: 12px 14px 14px;
   background: var(--ion-background-color, #f8fafc);
 }
 
-.fields-list { margin-bottom: 10px; }
-
 .field-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 10px;
   padding: 8px 4px;
-  border-bottom: 1px solid var(--t-border);
-
-  &:last-child { border-bottom: none; }
-
-  .field-icon { font-size: 14px; color: var(--t-subtext); flex-shrink: 0; }
-
-  .field-label {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--t-text);
-  }
-
-  .field-actions { display: flex; gap: 0; }
+  border-bottom: 1px solid var(--tailor-border, #e2e8f0);
+  &:last-of-type { border-bottom: none; }
 }
 
+.field-icon-ring {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: rgba(108,99,255,0.08);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  ion-icon { font-size: 13px; color: #6c63ff; }
+}
+
+.field-label {
+  flex: 1; font-size: 14px; font-weight: 500; color: var(--tailor-text, #1e293b);
+}
+
+.field-actions { display: flex; gap: 0; }
+
 .no-fields {
-  text-align: center;
-  font-size: 13px;
-  color: var(--t-subtext);
-  padding: 12px 0;
+  text-align: center; font-size: 13px;
+  color: var(--tailor-subtext, #94a3b8); padding: 10px 0 6px;
 }
 
 .add-field-btn {
-  --border-color: #0ea5e9;
-  --color: #0ea5e9;
-  --border-radius: 12px;
-  font-weight: 700;
-  font-size: 13px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 10px;
+  padding: 10px; border-radius: 12px;
+  border: 1.5px dashed rgba(14,165,233,0.4);
+  background: rgba(14,165,233,0.05);
+  font-size: 13px; font-weight: 700; color: #0ea5e9;
+  cursor: pointer;
+  ion-icon { font-size: 16px; }
+}
+
+// ── Term Rows ───────────────────────────────────────────────────
+.term-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 10px 12px 14px;
+  position: relative;
+
+  .term-num {
+    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    background: rgba(108,99,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #6c63ff;
+    margin-top: 1px;
+  }
+
+  .term-text {
+    flex: 1; font-size: 13px; color: var(--tailor-text, #1e293b);
+    line-height: 1.5;
+  }
+
+  .card-divider {
+    position: absolute; bottom: 0; left: 14px; right: 14px;
+    height: 1px; background: var(--tailor-border, #e2e8f0); margin: 0;
+  }
 }

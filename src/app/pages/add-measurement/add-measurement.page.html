@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="ao-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="'/customer-detail/' + customerId"></ion-back-button>
@@ -7,42 +7,61 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ao-content">
   <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-body">
 
-    <div class="section-label">Dress Type</div>
-    <ion-item class="form-item">
-      <ion-label position="stacked">Select Type</ion-label>
-      <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)" interface="action-sheet">
-        <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
-      </ion-select>
-    </ion-item>
+      <!-- Dress Type -->
+      <div class="section-label">Dress Type</div>
+      <div class="modern-card">
+        <div class="mfield">
+          <div class="mfield-icon"><ion-icon name="shirt-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Select Type</span>
+            <ion-select formControlName="dressType" (ionChange)="onDressTypeChange($event)"
+              interface="action-sheet" class="mfield-select">
+              <ion-select-option *ngFor="let c of dressConfigs" [value]="c.name">{{ c.name }}</ion-select-option>
+            </ion-select>
+          </div>
+        </div>
+      </div>
 
-    <div class="section-label">Measurements (inches)</div>
+      <!-- Measurements -->
+      <div class="section-label">
+        Measurements <span class="section-unit">(inches)</span>
+      </div>
 
-    <ion-grid class="ion-no-padding" *ngIf="measurementFields.length > 0">
-      <ion-row>
-        <ion-col size="6" *ngFor="let field of measurementFields">
-          <ion-item class="form-item">
-            <ion-label position="stacked">{{ field.label }}</ion-label>
-            <ion-input [formControlName]="field.key" type="number" placeholder="0" inputmode="decimal"></ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+      <div class="entry-measure-grid" *ngIf="measurementFields.length > 0">
+        <div class="measure-cell" *ngFor="let field of measurementFields">
+          <input type="number" inputmode="decimal" placeholder="0"
+            class="measure-native-input"
+            [formControlName]="field.key"/>
+          <span class="measure-label">{{ field.label }}</span>
+        </div>
+      </div>
 
-    <p class="no-fields-hint" *ngIf="measurementFields.length === 0">
-      No fields for this dress type. Add them in Settings.
-    </p>
+      <div class="modern-card no-fields-card" *ngIf="measurementFields.length === 0">
+        <p>No fields for this dress type. Add them in Settings.</p>
+      </div>
 
-    <div class="section-label">Notes</div>
-    <ion-item class="form-item">
-      <ion-textarea formControlName="notes" placeholder="Fabric, fit preference, special instructions..." rows="3" autoGrow></ion-textarea>
-    </ion-item>
+      <!-- Notes -->
+      <div class="section-label">Notes</div>
+      <div class="modern-card">
+        <div class="mfield notes-field">
+          <div class="mfield-icon notes-icon"><ion-icon name="document-text-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <ion-textarea formControlName="notes"
+              placeholder="Fabric, fit preference, special instructions..."
+              rows="3" autoGrow class="mfield-textarea"></ion-textarea>
+          </div>
+        </div>
+      </div>
 
-    <ion-button expand="block" type="submit" class="save-btn">
-      <ion-icon slot="start" name="{{ isEdit ? 'checkmark-circle-outline' : 'save-outline' }}"></ion-icon>
-      {{ isEdit ? 'Update Measurement' : 'Save Measurement' }}
-    </ion-button>
+      <ion-button expand="block" type="submit" class="save-btn">
+        <ion-icon slot="start" name="{{ isEdit ? 'checkmark-circle-outline' : 'save-outline' }}"></ion-icon>
+        {{ isEdit ? 'Update Measurement' : 'Save Measurement' }}
+      </ion-button>
+
+    </div>
   </form>
 </ion-content>

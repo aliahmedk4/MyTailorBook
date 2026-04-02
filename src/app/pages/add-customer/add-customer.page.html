@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="ao-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
@@ -7,49 +7,80 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ao-content">
   <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="form-body">
 
-    <div class="form-hero">
-      <div class="form-avatar">{{ displayName ? displayName.charAt(0).toUpperCase() : '?' }}</div>
-      <p class="form-avatar-name">{{ displayName || 'New Customer' }}</p>
+      <!-- Avatar Hero -->
+      <div class="ac-hero">
+        <div class="ac-avatar">{{ displayName ? displayName.charAt(0).toUpperCase() : '?' }}</div>
+        <p class="ac-name">{{ displayName || 'New Customer' }}</p>
+      </div>
+
+      <!-- Name -->
+      <div class="section-label">Name</div>
+      <div class="modern-card">
+        <div class="mfield">
+          <div class="mfield-icon"><ion-icon name="person-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">First Name <span class="req">*</span></span>
+            <ion-input formControlName="firstName" placeholder="e.g. Ahmed" class="mfield-input" clearInput></ion-input>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="mfield">
+          <div class="mfield-icon"><ion-icon name="person-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Last Name</span>
+            <ion-input formControlName="lastName" placeholder="e.g. Khan" class="mfield-input" clearInput></ion-input>
+          </div>
+        </div>
+      </div>
+      <ion-note color="danger" class="err-note"
+        *ngIf="form.get('firstName')?.invalid && form.get('firstName')?.touched">
+        First name is required
+      </ion-note>
+
+      <!-- Contact -->
+      <div class="section-label">Contact</div>
+      <div class="modern-card">
+        <div class="mfield">
+          <div class="mfield-icon phone-icon"><ion-icon name="call-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Phone Number</span>
+            <ion-input formControlName="phone" type="tel" placeholder="e.g. 0300-1234567"
+              class="mfield-input" clearInput></ion-input>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="mfield">
+          <div class="mfield-icon alt-icon"><ion-icon name="call-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Alternate Phone</span>
+            <ion-input formControlName="altPhone" type="tel" placeholder="e.g. 0321-9876543"
+              class="mfield-input" clearInput></ion-input>
+          </div>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="section-label">Address</div>
+      <div class="modern-card">
+        <div class="mfield notes-field">
+          <div class="mfield-icon loc-icon"><ion-icon name="location-outline"></ion-icon></div>
+          <div class="mfield-inner">
+            <span class="mfield-lbl">Address</span>
+            <ion-textarea formControlName="address" placeholder="Street, City..."
+              rows="2" autoGrow class="mfield-textarea"></ion-textarea>
+          </div>
+        </div>
+      </div>
+
+      <ion-button expand="block" type="submit" class="save-btn" [disabled]="form.invalid">
+        <ion-icon slot="start" name="{{ isEdit ? 'checkmark-circle-outline' : 'person-add-outline' }}"></ion-icon>
+        {{ isEdit ? 'Update Customer' : 'Save Customer' }}
+      </ion-button>
+
     </div>
-
-    <div class="section-label">Name</div>
-
-    <div class="name-row-fields">
-      <ion-item class="form-item">
-        <ion-label position="stacked">First Name <span class="req">*</span></ion-label>
-        <ion-input formControlName="firstName" placeholder="e.g. Ahmed" clearInput></ion-input>
-      </ion-item>
-      <ion-item class="form-item">
-        <ion-label position="stacked">Last Name</ion-label>
-        <ion-input formControlName="lastName" placeholder="e.g. Khan" clearInput></ion-input>
-      </ion-item>
-    </div>
-    <ion-note color="danger" class="err-note" *ngIf="form.get('firstName')?.invalid && form.get('firstName')?.touched">
-      First name is required
-    </ion-note>
-
-    <div class="section-label">Contact</div>
-
-    <ion-item class="form-item">
-      <ion-icon name="call-outline" slot="start" class="field-icon"></ion-icon>
-      <ion-label position="stacked">Phone Number</ion-label>
-      <ion-input formControlName="phone" type="tel" placeholder="e.g. 0300-1234567" clearInput></ion-input>
-    </ion-item>
-
-    <div class="section-label">Address</div>
-
-    <ion-item class="form-item">
-      <ion-icon name="location-outline" slot="start" class="field-icon"></ion-icon>
-      <ion-label position="stacked">Address</ion-label>
-      <ion-textarea formControlName="address" placeholder="Street, City..." rows="2" autoGrow></ion-textarea>
-    </ion-item>
-
-    <ion-button expand="block" type="submit" class="save-btn" [disabled]="form.invalid">
-      <ion-icon slot="start" name="{{ isEdit ? 'checkmark-circle-outline' : 'person-add-outline' }}"></ion-icon>
-      {{ isEdit ? 'Update Customer' : 'Save Customer' }}
-    </ion-button>
   </form>
 </ion-content>

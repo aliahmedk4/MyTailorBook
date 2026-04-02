@@ -7,6 +7,7 @@ import { StorageService } from '../../services/storage.service';
 @Component({
   selector: 'app-add-customer',
   templateUrl: './add-customer.page.html',
+  styleUrls: ['./add-customer.page.scss'],
   standalone: false,
 })
 export class AddCustomerPage implements OnInit {
@@ -30,6 +31,7 @@ export class AddCustomerPage implements OnInit {
       firstName: ['', Validators.required],
       lastName:  [''],
       phone:     [''],
+      altPhone:  [''],
       address:   [''],
     });
 
@@ -39,6 +41,7 @@ export class AddCustomerPage implements OnInit {
         firstName: c.firstName || c.name,
         lastName:  c.lastName  || '',
         phone:     c.phone     || '',
+        altPhone:  c.altPhone  || '',
         address:   c.address   || '',
       });
     }
@@ -52,9 +55,9 @@ export class AddCustomerPage implements OnInit {
 
   async save() {
     if (this.form.invalid) return;
-    const { firstName, lastName, phone, address } = this.form.value;
+    const { firstName, lastName, phone, altPhone, address } = this.form.value;
     const name = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
-    const data = { name, firstName: firstName.trim(), lastName: lastName.trim(), phone, address };
+    const data = { name, firstName: firstName.trim(), lastName: lastName.trim(), phone, altPhone, address };
 
     if (this.isEdit) {
       this.storage.updateCustomer(this.customerId, data);

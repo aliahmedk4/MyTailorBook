@@ -63,6 +63,12 @@ export class BackupPage implements OnInit {
         customers: this.storage.getCustomers(),
         orders: this.storage.getOrders(),
         dressConfigs: this.storage.getDressConfigs(),
+        tailorInfo: this.storage.getTailorInfo(),
+        statuses: this.storage.getStatuses(),
+        defaultStatus: this.storage.getDefaultStatus(),
+        orderSeq: parseInt(localStorage.getItem('tailor_order_seq') || '0', 10),
+        terms: this.storage.getTerms(),
+        pdfHeaderStyle: this.storage.getPdfHeaderStyle(),
         images,
       };
       await this.drive.backup(data);
@@ -91,7 +97,14 @@ export class BackupPage implements OnInit {
     try {
       const data: any = await this.drive.restore();
       if (!data) { this.showToast('No backup found on Google Drive.', 'warning'); return; }
-      await this.storage.importData(data.customers || [], data.orders || [], data.dressConfigs || [], data.images || {});
+      await this.storage.importData(data.customers || [], data.orders || [], data.dressConfigs || [], data.images || {}, {
+        tailorInfo: data.tailorInfo,
+        statuses: data.statuses,
+        defaultStatus: data.defaultStatus,
+        orderSeq: data.orderSeq,
+        terms: data.terms,
+        pdfHeaderStyle: data.pdfHeaderStyle,
+      });
       this.showToast('✅ Data restored successfully!', 'success');
     } catch (e: any) {
       this.showToast(e.message || 'Restore failed', 'danger');

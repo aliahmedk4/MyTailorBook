@@ -10,6 +10,28 @@ const DRESS_CONFIGS_KEY  = 'tailor_dress_configs';
 const DEFAULT_STATUS_KEY = 'tailor_default_status';
 const STATUSES_KEY       = 'tailor_statuses';
 const TAILOR_INFO_KEY    = 'tailor_info';
+const TERMS_KEY             = 'tailor_terms';
+const PDF_HEADER_STYLE_KEY  = 'tailor_pdf_header_style';
+
+export interface PdfHeaderStyle {
+  bgColor:       string;
+  brandColor:    string;
+  brandSize:     number;
+  taglineColor:  string;
+  taglineSize:   number;
+  contactColor:  string;
+  contactSize:   number;
+}
+
+const DEFAULT_PDF_HEADER_STYLE: PdfHeaderStyle = {
+  bgColor:      '#1e293b',
+  brandColor:   '#ffffff',
+  brandSize:    22,
+  taglineColor: '#94a3b8',
+  taglineSize:  11,
+  contactColor: '#cbd5e1',
+  contactSize:  10,
+};
 
 export interface TailorInfo {
   name: string;
@@ -20,6 +42,14 @@ export interface TailorInfo {
 }
 
 const DEFAULT_STATUSES = ['Pending', 'In Progress', 'Ready', 'Delivered'];
+
+const DEFAULT_TERMS = [
+  'Please collect your order within 7 days of the due date. Uncollected orders may be subject to storage charges.',
+  'Advance payment is non-refundable once work has commenced.',
+  'Minor fitting adjustments are complimentary within 7 days of delivery.',
+  'We are not responsible for any damage caused by customer-supplied fabric.',
+  'This receipt must be presented at the time of collection.',
+];
 
 const DEFAULT_DRESS_CONFIGS: DressConfig[] = [
   { id: 'dc_shirt',  name: 'Shirt',  isDefault: true, fields: [
@@ -223,13 +253,19 @@ export class StorageService {
 
   // ── Import / Restore ────────────────────────────────────────────
 
-  async importData(customers: Customer[], orders: Order[], dressConfigs?: DressConfig[], images?: Record<string, string>): Promise<void> {
+  async importData(customers: Customer[], orders: Order[], dressConfigs?: DressConfig[], images?: Record<string, string>, settings?: { tailorInfo?: any; statuses?: string[]; defaultStatus?: string; orderSeq?: number; terms?: string[]; pdfHeaderStyle?: PdfHeaderStyle }): Promise<void> {
     localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
     await this.idb.clearOrders();
     await this.idb.bulkSaveOrders(orders);
     this._ordersCache = null;
     if (dressConfigs?.length) localStorage.setItem(DRESS_CONFIGS_KEY, JSON.stringify(dressConfigs));
     if (images && Object.keys(images).length) await this.idb.bulkSaveImages(images);
+    if (settings?.tailorInfo) localStorage.setItem(TAILOR_INFO_KEY, JSON.stringify(settings.tailorInfo));
+    if (settings?.statuses?.length) localStorage.setItem(STATUSES_KEY, JSON.stringify(settings.statuses));
+    if (settings?.defaultStatus) localStorage.setItem(DEFAULT_STATUS_KEY, settings.defaultStatus);
+    if (settings?.orderSeq != null) localStorage.setItem('tailor_order_seq', settings.orderSeq.toString());
+    if (settings?.terms?.length) localStorage.setItem(TERMS_KEY, JSON.stringify(settings.terms));
+    if (settings?.pdfHeaderStyle) localStorage.setItem(PDF_HEADER_STYLE_KEY, JSON.stringify(settings.pdfHeaderStyle));
   }
 
   // ── Order Stats ─────────────────────────────────────────────────
@@ -303,6 +339,28 @@ export class StorageService {
 
   saveTailorInfo(info: TailorInfo): void {
     localStorage.setItem(TAILOR_INFO_KEY, JSON.stringify(info));
+  }
+
+  // ── Terms & Conditions ──────────────────────────────────────────
+
+  getTerms(): string[] {
+    const data = localStorage.getItem(TERMS_KEY);
+    return data ? JSON.parse(data) : [...DEFAULT_TERMS];
+  }
+
+  saveTerms(terms: string[]): void {
+    localStorage.setItem(TERMS_KEY, JSON.stringify(terms));
+  }
+
+  // ── PDF Header Style ────────────────────────────────────────────
+
+  getPdfHeaderStyle(): PdfHeaderStyle {
+    const data = localStorage.getItem(PDF_HEADER_STYLE_KEY);
+    return data ? { ...DEFAULT_PDF_HEADER_STYLE, ...JSON.parse(data) } : { ...DEFAULT_PDF_HEADER_STYLE };
+  }
+
+  savePdfHeaderStyle(style: PdfHeaderStyle): void {
+    localStorage.setItem(PDF_HEADER_STYLE_KEY, JSON.stringify(style));
   }
 
   // ── Sample Data ─────────────────────────────────────────────────

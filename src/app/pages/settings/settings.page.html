@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="ao-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
@@ -7,134 +7,275 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ao-content">
+  <div class="form-body">
 
-  <!-- Tailor / Shop Info -->
-  <div class="section-header">
-    <div class="section-info">
-      <h2>Shop Info</h2>
-      <p>Used on generated PDFs</p>
-    </div>
-  </div>
-  <div class="info-card">
-    <ion-item lines="inset" class="info-item">
-      <ion-icon name="storefront-outline" slot="start" class="info-icon"></ion-icon>
-      <ion-label position="stacked">Tailor / Shop Name</ion-label>
-      <ion-input [(ngModel)]="tailorInfo.name" placeholder="e.g. Ali Tailor House"></ion-input>
-    </ion-item>
-    <ion-item lines="inset" class="info-item">
-      <ion-icon name="sparkles-outline" slot="start" class="info-icon"></ion-icon>
-      <ion-label position="stacked">Tagline</ion-label>
-      <ion-input [(ngModel)]="tailorInfo.tagline" placeholder="e.g. Stitching Excellence Since 2010"></ion-input>
-    </ion-item>
-    <ion-item lines="inset" class="info-item">
-      <ion-icon name="call-outline" slot="start" class="info-icon"></ion-icon>
-      <ion-label position="stacked">Contact Number</ion-label>
-      <ion-input [(ngModel)]="tailorInfo.contact" type="tel" placeholder="e.g. 0300-1234567"></ion-input>
-    </ion-item>
-    <ion-item lines="inset" class="info-item">
-      <ion-icon name="mail-outline" slot="start" class="info-icon"></ion-icon>
-      <ion-label position="stacked">Email</ion-label>
-      <ion-input [(ngModel)]="tailorInfo.email" type="email" placeholder="e.g. ali@tailor.com"></ion-input>
-    </ion-item>
-    <ion-item lines="none" class="info-item">
-      <ion-icon name="location-outline" slot="start" class="info-icon"></ion-icon>
-      <ion-label position="stacked">Address</ion-label>
-      <ion-input [(ngModel)]="tailorInfo.address" placeholder="e.g. Shop 5, Main Bazaar, Lahore"></ion-input>
-    </ion-item>
-    <div class="save-info-wrap">
-      <ion-button expand="block" class="save-info-btn" (click)="saveTailorInfo()">
-        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-        Save Shop Info
-      </ion-button>
-    </div>
-  </div>
+    <!-- ── Shop Info ─────────────────────────────────────────────── -->
+    <div class="section-label">Shop Info</div>
+    <div class="modern-card">
 
-  <!-- Default Status -->
-  <div class="section-header">
-    <div class="section-info">
-      <h2>Order Statuses</h2>
-      <p>Manage statuses · tap to set as default</p>
-    </div>
-    <ion-button fill="solid" size="small" class="add-btn" (click)="addStatus()">
-      <ion-icon slot="start" name="add-outline"></ion-icon> Add
-    </ion-button>
-  </div>
-  <div class="status-list">
-    <div class="status-row" *ngFor="let s of statuses">
-      <div class="status-row-left" (click)="setDefaultStatus(s)">
-        <div class="status-dot" [class]="'dot-' + s.toLowerCase().replace(' ', '-')"></div>
-        <span class="status-name">{{ s }}</span>
-        <span class="default-tag" *ngIf="defaultStatus === s">Default</span>
+      <div class="mfield">
+        <div class="mfield-icon store-icon"><ion-icon name="storefront-outline"></ion-icon></div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Shop Name</span>
+          <ion-input [(ngModel)]="tailorInfo.name" placeholder="e.g. Ali Tailor House" class="mfield-input"></ion-input>
+        </div>
       </div>
-      <ion-button fill="clear" size="small" color="danger"
-        [disabled]="s === 'Pending'"
-        (click)="removeStatus(s)">
-        <ion-icon name="trash-outline"></ion-icon>
-      </ion-button>
-    </div>
-  </div>
+      <div class="card-divider"></div>
 
-  <!-- Dress Types -->
-  <div class="section-header" style="margin-top: 8px;">
-    <div class="section-info">
-      <h2>Dress Types</h2>
-      <p>Customize types and their measurement fields</p>
+      <div class="mfield">
+        <div class="mfield-icon spark-icon"><ion-icon name="sparkles-outline"></ion-icon></div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Tagline</span>
+          <ion-input [(ngModel)]="tailorInfo.tagline" placeholder="e.g. Stitching Excellence Since 2010" class="mfield-input"></ion-input>
+        </div>
+      </div>
+      <div class="card-divider"></div>
+
+      <div class="mfield">
+        <div class="mfield-icon phone-icon"><ion-icon name="call-outline"></ion-icon></div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Contact Number</span>
+          <ion-input [(ngModel)]="tailorInfo.contact" type="tel" placeholder="e.g. 0300-1234567" class="mfield-input"></ion-input>
+        </div>
+      </div>
+      <div class="card-divider"></div>
+
+      <div class="mfield">
+        <div class="mfield-icon mail-icon"><ion-icon name="mail-outline"></ion-icon></div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Email</span>
+          <ion-input [(ngModel)]="tailorInfo.email" type="email" placeholder="e.g. ali@tailor.com" class="mfield-input"></ion-input>
+        </div>
+      </div>
+      <div class="card-divider"></div>
+
+      <div class="mfield">
+        <div class="mfield-icon loc-icon"><ion-icon name="location-outline"></ion-icon></div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Address</span>
+          <ion-input [(ngModel)]="tailorInfo.address" placeholder="e.g. Shop 5, Main Bazaar, Lahore" class="mfield-input"></ion-input>
+        </div>
+      </div>
+
     </div>
-    <ion-button fill="solid" size="small" class="add-btn" (click)="addDressType()">
-      <ion-icon slot="start" name="add-outline"></ion-icon> Add Type
+
+    <ion-button expand="block" class="save-btn" (click)="saveTailorInfo()">
+      <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+      Save Shop Info
     </ion-button>
-  </div>
 
-  <div class="configs-list">
-    <div class="config-card" *ngFor="let config of configs">
+    <!-- ── PDF Header Style ───────────────────────────────────────── -->
+    <div class="section-label" style="margin-top:8px">PDF Invoice Header</div>
+    <p class="section-hint">Controls how the header looks on printed receipts</p>
 
-      <!-- Card Header -->
-      <div class="config-header" (click)="toggle(config.id)">
-        <div class="config-left">
-          <div class="config-badge" [class.default-badge]="config.isDefault">
-            {{ config.isDefault ? 'Default' : 'Custom' }}
+    <!-- Live Preview -->
+    <div class="pdf-preview" [style.background]="pdfStyle.bgColor">
+      <div class="pp-brand" [style.color]="pdfStyle.brandColor" [style.font-size.px]="pdfStyle.brandSize">
+        {{ tailorInfo.name || 'Shop Name' }}
+      </div>
+      <div class="pp-tagline" [style.color]="pdfStyle.taglineColor" [style.font-size.px]="pdfStyle.taglineSize">
+        {{ tailorInfo.tagline || 'Your tagline here' }}
+      </div>
+      <div class="pp-contact" [style.color]="pdfStyle.contactColor" [style.font-size.px]="pdfStyle.contactSize">
+        {{ tailorInfo.contact || '0300-0000000' }}
+      </div>
+    </div>
+
+    <div class="modern-card">
+
+      <!-- Background Color -->
+      <div class="mfield">
+        <div class="mfield-icon" [style.background]="pdfStyle.bgColor + '33'">
+          <ion-icon name="color-fill-outline" [style.color]="pdfStyle.bgColor"></ion-icon>
+        </div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Background Color</span>
+        </div>
+        <div class="color-picker-wrap">
+          <div class="color-swatch" [style.background]="pdfStyle.bgColor"></div>
+          <input type="color" class="color-native" [value]="pdfStyle.bgColor"
+            (input)="pdfStyle.bgColor = $any($event.target).value"/>
+        </div>
+      </div>
+      <div class="card-divider"></div>
+
+      <!-- Shop Name Color + Size -->
+      <div class="mfield">
+        <div class="mfield-icon" [style.background]="pdfStyle.brandColor + '22'">
+          <ion-icon name="text-outline" [style.color]="pdfStyle.brandColor"></ion-icon>
+        </div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Shop Name Color</span>
+          <div class="size-row">
+            <span class="size-lbl">Size: {{ pdfStyle.brandSize }}px</span>
+            <input type="range" min="14" max="36" step="1" class="size-slider"
+              [(ngModel)]="pdfStyle.brandSize"/>
           </div>
-          <span class="config-name">{{ config.name }}</span>
-          <span class="field-count">{{ config.fields.length }} fields</span>
         </div>
-        <div class="config-actions" (click)="$event.stopPropagation()">
-          <ion-button fill="clear" size="small" (click)="renameDressType(config)">
-            <ion-icon name="pencil-outline"></ion-icon>
-          </ion-button>
-          <ion-button fill="clear" size="small" color="danger" (click)="deleteDressType(config)">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-          <ion-icon [name]="expandedId === config.id ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+        <div class="color-picker-wrap">
+          <div class="color-swatch" [style.background]="pdfStyle.brandColor"></div>
+          <input type="color" class="color-native" [value]="pdfStyle.brandColor"
+            (input)="pdfStyle.brandColor = $any($event.target).value"/>
+        </div>
+      </div>
+      <div class="card-divider"></div>
+
+      <!-- Tagline Color + Size -->
+      <div class="mfield">
+        <div class="mfield-icon" [style.background]="pdfStyle.taglineColor + '22'">
+          <ion-icon name="text-outline" [style.color]="pdfStyle.taglineColor"></ion-icon>
+        </div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Tagline Color</span>
+          <div class="size-row">
+            <span class="size-lbl">Size: {{ pdfStyle.taglineSize }}px</span>
+            <input type="range" min="8" max="18" step="1" class="size-slider"
+              [(ngModel)]="pdfStyle.taglineSize"/>
+          </div>
+        </div>
+        <div class="color-picker-wrap">
+          <div class="color-swatch" [style.background]="pdfStyle.taglineColor"></div>
+          <input type="color" class="color-native" [value]="pdfStyle.taglineColor"
+            (input)="pdfStyle.taglineColor = $any($event.target).value"/>
+        </div>
+      </div>
+      <div class="card-divider"></div>
+
+      <!-- Contact Color + Size -->
+      <div class="mfield">
+        <div class="mfield-icon" [style.background]="pdfStyle.contactColor + '22'">
+          <ion-icon name="call-outline" [style.color]="pdfStyle.contactColor"></ion-icon>
+        </div>
+        <div class="mfield-inner">
+          <span class="mfield-lbl">Contact / Address Color</span>
+          <div class="size-row">
+            <span class="size-lbl">Size: {{ pdfStyle.contactSize }}px</span>
+            <input type="range" min="8" max="16" step="1" class="size-slider"
+              [(ngModel)]="pdfStyle.contactSize"/>
+          </div>
+        </div>
+        <div class="color-picker-wrap">
+          <div class="color-swatch" [style.background]="pdfStyle.contactColor"></div>
+          <input type="color" class="color-native" [value]="pdfStyle.contactColor"
+            (input)="pdfStyle.contactColor = $any($event.target).value"/>
         </div>
       </div>
 
-      <!-- Expanded Fields -->
-      <div class="fields-body" *ngIf="expandedId === config.id">
-        <div class="fields-list">
+    </div>
+
+    <ion-button expand="block" class="save-btn" (click)="savePdfStyle()">
+      <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+      Save PDF Header Style
+    </ion-button>
+
+    <!-- ── Order Statuses ─────────────────────────────────────────── -->
+    <div class="section-label-row">
+      <span class="section-label" style="padding:0">Order Statuses</span>
+      <button class="add-pill-btn" (click)="addStatus()">
+        <ion-icon name="add-outline"></ion-icon> Add
+      </button>
+    </div>
+    <p class="section-hint">Tap a status to set it as default</p>
+
+    <div class="modern-card">
+      <div class="status-row" *ngFor="let s of statuses; let last = last">
+        <div class="status-row-left" (click)="setDefaultStatus(s)">
+          <div class="status-dot" [ngStyle]="{'background': statusColor(s)}"></div>
+          <span class="status-name">{{ s }}</span>
+          <span class="default-tag" *ngIf="defaultStatus === s">Default</span>
+        </div>
+        <button class="remove-status-btn" [disabled]="s === 'Pending'" (click)="removeStatus(s)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+        <div class="card-divider" *ngIf="!last"></div>
+      </div>
+    </div>
+
+    <!-- ── Dress Types ────────────────────────────────────────────── -->
+    <div class="section-label-row" style="margin-top: 8px;">
+      <span class="section-label" style="padding:0">Dress Types</span>
+      <button class="add-pill-btn" (click)="addDressType()">
+        <ion-icon name="add-outline"></ion-icon> Add Type
+      </button>
+    </div>
+    <p class="section-hint">Tap to expand · customize measurement fields</p>
+
+    <div class="configs-list">
+      <div class="modern-card config-card" *ngFor="let config of configs">
+
+        <!-- Card Header -->
+        <div class="config-header" (click)="toggle(config.id)">
+          <div class="config-left">
+            <span class="config-badge" [class.default-badge]="config.isDefault">
+              {{ config.isDefault ? 'Default' : 'Custom' }}
+            </span>
+            <span class="config-name">{{ config.name }}</span>
+            <span class="field-count">{{ config.fields.length }} fields</span>
+          </div>
+          <div class="config-actions" (click)="$event.stopPropagation()">
+            <button class="icon-btn" (click)="renameDressType(config)">
+              <ion-icon name="pencil-outline"></ion-icon>
+            </button>
+            <button class="icon-btn danger-btn" (click)="deleteDressType(config)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+            <ion-icon [name]="expandedId === config.id ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron"></ion-icon>
+          </div>
+        </div>
+
+        <!-- Expanded Fields -->
+        <div class="fields-body" *ngIf="expandedId === config.id">
           <div class="field-row" *ngFor="let field of config.fields">
-            <ion-icon name="resize-outline" class="field-icon"></ion-icon>
+            <div class="field-icon-ring"><ion-icon name="resize-outline"></ion-icon></div>
             <span class="field-label">{{ field.label }}</span>
             <div class="field-actions">
-              <ion-button fill="clear" size="small" (click)="editField(config, field)">
+              <button class="icon-btn" (click)="editField(config, field)">
                 <ion-icon name="pencil-outline"></ion-icon>
-              </ion-button>
-              <ion-button fill="clear" size="small" color="danger" (click)="deleteField(config, field)">
+              </button>
+              <button class="icon-btn danger-btn" (click)="deleteField(config, field)">
                 <ion-icon name="close-outline"></ion-icon>
-              </ion-button>
+              </button>
             </div>
           </div>
           <div class="no-fields" *ngIf="config.fields.length === 0">
-            No fields yet. Add one below.
+            No fields yet.
           </div>
+          <button class="add-field-btn" (click)="addField(config)">
+            <ion-icon name="add-circle-outline"></ion-icon> Add Measurement Field
+          </button>
         </div>
-        <ion-button expand="block" fill="outline" size="small" class="add-field-btn" (click)="addField(config)">
-          <ion-icon slot="start" name="add-circle-outline"></ion-icon>
-          Add Measurement Field
-        </ion-button>
+
       </div>
-
     </div>
-  </div>
 
+    <!-- ── Terms & Conditions ──────────────────────────────────── -->
+    <div class="section-label-row" style="margin-top: 8px;">
+      <span class="section-label" style="padding:0">Terms &amp; Conditions</span>
+      <button class="add-pill-btn" (click)="addTerm()">
+        <ion-icon name="add-outline"></ion-icon> Add
+      </button>
+    </div>
+    <p class="section-hint">Printed on every order receipt PDF</p>
+
+    <div class="modern-card">
+      <div class="term-row" *ngFor="let t of terms; let i = index; let last = last">
+        <div class="term-num">{{ i + 1 }}</div>
+        <span class="term-text">{{ t }}</span>
+        <div class="field-actions">
+          <button class="icon-btn" (click)="editTerm(i)">
+            <ion-icon name="pencil-outline"></ion-icon>
+          </button>
+          <button class="icon-btn danger-btn" (click)="removeTerm(i)">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+        <div class="card-divider" *ngIf="!last"></div>
+      </div>
+      <div class="no-fields" *ngIf="terms.length === 0" style="padding: 16px;">
+        No terms added yet.
+      </div>
+    </div>
+
+  </div>
 </ion-content>

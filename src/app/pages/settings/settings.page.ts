@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
-import { StorageService, TailorInfo } from '../../services/storage.service';
+import { StorageService, TailorInfo, PdfHeaderStyle } from '../../services/storage.service';
 import { DressConfig, MeasurementField } from '../../models/dress-config.model';
 import { OrderStatus } from '../../models/order.model';
 
@@ -16,6 +16,8 @@ export class SettingsPage implements OnInit {
   expandedId: string | null = null;
   statuses: string[] = [];
   defaultStatus!: OrderStatus;
+  terms: string[] = [];
+  pdfStyle!: PdfHeaderStyle;
 
   constructor(
     private storage: StorageService,
@@ -26,10 +28,17 @@ export class SettingsPage implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
-    this.tailorInfo = this.storage.getTailorInfo();
-    this.configs = this.storage.getDressConfigs();
+    this.tailorInfo    = this.storage.getTailorInfo();
+    this.configs       = this.storage.getDressConfigs();
     this.defaultStatus = this.storage.getDefaultStatus();
-    this.statuses = this.storage.getStatuses();
+    this.statuses      = this.storage.getStatuses();
+    this.terms         = this.storage.getTerms();
+    this.pdfStyle      = this.storage.getPdfHeaderStyle();
+  }
+
+  savePdfStyle() {
+    this.storage.savePdfHeaderStyle(this.pdfStyle);
+    this.toast('PDF header style saved');
   }
 
   saveTailorInfo() {
@@ -217,5 +226,67 @@ export class SettingsPage implements OnInit {
   private async toast(message: string) {
     const t = await this.toastCtrl.create({ message, duration: 1800, position: 'bottom', color: 'dark' });
     await t.present();
+  }
+
+  statusColor(status: string): string {
+    const map: Record<string, string> = {
+      'Pending': '#f59e0b', 'In Progress': '#0ea5e9',
+      'Ready': '#10b981', 'Delivered': '#94a3b8',
+    };
+    return map[status] || '#6c63ff';
+  }
+
+  async addTerm() {
+    const alert = await this.alertCtrl.create({
+      header: 'Add Term',
+      inputs: [{ name: 'text', type: 'textarea', placeholder: 'Enter term or condition...' }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Add',
+          handler: (data) => {
+            const text = data.text?.trim();
+            if (!text) return false;
+            const updated = [...this.terms, text];
+            this.storage.saveTerms(updated);
+            this.terms = updated;
+            this.toast('Term added');
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async editTerm(index: number) {
+    const alert = await this.alertCtrl.create({
+      header: 'Edit Term',
+      inputs: [{ name: 'text', type: 'textarea', value: this.terms[index] }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Save',
+          handler: (data) => {
+            const text = data.text?.trim();
+            if (!text) return false;
+            const updated = [...this.terms];
+            updated[index] = text;
+            this.storage.saveTerms(updated);
+            this.terms = updated;
+            this.toast('Term updated');
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  removeTerm(index: number) {
+    const updated = this.terms.filter((_, i) => i !== index);
+    this.storage.saveTerms(updated);
+    this.terms = updated;
+    this.toast('Term removed');
   }
 }

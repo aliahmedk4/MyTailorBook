@@ -1,76 +1,108 @@
-.form-hero {
+.ao-content { --background: var(--ion-background-color); }
+
+.form-body { padding: 16px 14px calc(48px + env(safe-area-inset-bottom, 0px)); }
+
+// ── Avatar Hero ────────────────────────────────────────────────────
+.ac-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 0 16px;
+  padding: 28px 0 20px;
 
-  .form-avatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 22px;
+  .ac-avatar {
+    width: 80px; height: 80px;
+    border-radius: 24px;
     background: linear-gradient(135deg, #6c63ff, #a78bfa);
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 800;
-    box-shadow: 0 8px 24px rgba(108,99,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 800;
+    box-shadow: 0 8px 28px rgba(108,99,255,0.38);
   }
 
-  .form-avatar-name {
-    margin: 8px 0 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--t-text);
+  .ac-name {
+    margin: 10px 0 0;
+    font-size: 17px; font-weight: 700;
+    color: var(--tailor-text, #1e293b);
   }
 }
 
-.name-row-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
+// ── Section Label ──────────────────────────────────────────────────
 .section-label {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--t-subtext);
-  padding: 14px 4px 6px;
+  font-size: 11px; font-weight: 800; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--tailor-subtext, #94a3b8);
+  padding: 16px 2px 8px;
 }
 
-.field-icon {
-  font-size: 18px;
-  color: #0ea5e9;
-  margin-right: 4px;
+// ── Modern Card ────────────────────────────────────────────────────
+.modern-card {
+  background: var(--tailor-surface, #fff);
+  border-radius: 18px;
+  border: 1px solid var(--tailor-border, #e2e8f0);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
 }
 
-.form-item {
-  --background: var(--tailor-surface);
-  --border-radius: 12px;
-  --padding-start: 14px;
-  --inner-padding-end: 14px;
-  margin-bottom: 10px;
-  border: 1px solid var(--tailor-border);
-  border-radius: 12px;
+.card-divider {
+  height: 1px;
+  background: var(--tailor-border, #e2e8f0);
+  margin: 0 16px;
 }
 
-.req { color: var(--ion-color-danger); }
+// ── Field Row ──────────────────────────────────────────────────────
+.mfield {
+  display: flex; align-items: center;
+  padding: 14px 16px; gap: 12px; min-height: 62px;
+}
 
+.mfield-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: rgba(108,99,255,0.1);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  ion-icon { font-size: 17px; color: #6c63ff; }
+
+  &.phone-icon { background: rgba(16,185,129,0.1); ion-icon { color: #10b981; } }
+  &.alt-icon   { background: rgba(14,165,233,0.1);  ion-icon { color: #0ea5e9; } }
+  &.loc-icon   { background: rgba(245,158,11,0.1);  ion-icon { color: #f59e0b; } }
+}
+
+.mfield-inner {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+
+.mfield-lbl {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; color: var(--tailor-subtext, #94a3b8);
+  .req { color: var(--ion-color-danger); }
+}
+
+.mfield-input {
+  --padding-start: 0; --padding-end: 0;
+  --padding-top: 2px; --padding-bottom: 2px;
+  font-size: 15px; font-weight: 600;
+  color: var(--tailor-text, #1e293b);
+  min-height: 28px;
+}
+
+.notes-field { align-items: flex-start; padding-top: 16px; }
+
+.mfield-textarea {
+  --padding-start: 0; --padding-end: 0;
+  font-size: 14px; color: var(--tailor-text, #1e293b);
+}
+
+// ── Error Note ─────────────────────────────────────────────────────
 .err-note {
   font-size: 12px;
-  padding: 0 4px 8px;
+  padding: 4px 4px 8px;
   display: block;
 }
 
+// ── Save Button ────────────────────────────────────────────────────
 .save-btn {
-  margin-top: 24px;
-  --border-radius: 14px;
-  --background: linear-gradient(135deg, #6c63ff, #a78bfa);
-  --box-shadow: 0 6px 20px rgba(108,99,255,0.35);
-  font-weight: 700;
-  font-size: 16px;
-  height: 52px;
+  margin-top: 28px;
+  margin-bottom: env(safe-area-inset-bottom, 12px);
+  --border-radius: 16px;
+  --background: linear-gradient(135deg, #4c46c8, #6c63ff, #a78bfa);
+  --box-shadow: 0 8px 28px rgba(108,99,255,0.4);
+  font-weight: 800; font-size: 16px; height: 56px;
 }
