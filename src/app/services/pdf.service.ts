@@ -1,17 +1,29 @@
 import { Injectable } from '@angular/core';
 import { StorageService } from './storage.service';
+import { IdbService } from './idb.service';
 import { Customer } from '../models/customer.model';
 import { Order } from '../models/order.model';
 
 @Injectable({ providedIn: 'root' })
 export class PdfService {
 
-  constructor(private storage: StorageService) {}
+  constructor(private storage: StorageService, private idb: IdbService) {}
 
-  saveOrderPdf(order: Order, customer: Customer | undefined): void {
+  // Called async after order save — pre-builds and caches PDF HTML in IDB
+  async cacheOrderPdf(order: Order, customer: Customer | undefined): Promise<void> {
+    try {
+      const html = this.buildOrderHtml(order, customer);
+      await this.idb.savePdfHtml(order.id, html);
+    } catch { /* silent — cache is best-effort */ }
+  }
+
+  async saveOrderPdf(order: Order, customer: Customer | undefined): Promise<void> {
+    const html     = await this.idb.getPdfHtml(order.id) || this.buildOrderHtml(order, customer);
+    const filename = this.pdfFileName(order, customer);
+    const final    = html.replace(/<title>[^<]*<\/title>/, `<title>${filename}</title>`);
     const win = window.open('', '_blank');
     if (!win) return;
-    win.document.write(this.buildOrderHtml(order, customer));
+    win.document.write(final);
     win.document.close();
     win.focus();
     setTimeout(() => { win.print(); }, 400);
@@ -404,5 +416,13 @@ export class PdfService {
       'Ready': '#10b981', 'Delivered': '#94a3b8',
     };
     return map[status] || '#6c63ff';
+  }
+
+  private pdfFileName(order: Order, customer: Customer | undefined): string {
+    const name  = (customer?.name || (order as any).customerName || 'Order')
+                    .replace(/[^a-zA-Z0-9\u0080-\uFFFF]+/g, '_').replace(/^_+|_+$/g, '');
+    const phone = (customer?.phone || '').replace(/[^0-9]/g, '');
+    const orderId = (order as any).orderNo || order.id;
+    return [name, phone, orderId].filter(Boolean).join('_') + '.pdf';
   }
 }

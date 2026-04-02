@@ -24,7 +24,8 @@ export class HomePage {
   ionViewWillEnter() { this.load(); }
 
   load() {
-    this.customers = this.storage.getCustomers();
+    this.customers = this.storage.getCustomers()
+      .sort((a, b) => a.name.localeCompare(b.name));
     this.applyFilter();
   }
 

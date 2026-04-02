@@ -127,15 +127,16 @@
   min-height: 28px;
 }
 
-// ── Save Button ────────────────────────────────────────────────────
-.save-btn {
-  margin-top: 14px;
-  margin-bottom: 4px;
-  --border-radius: 16px;
-  --background: linear-gradient(135deg, #4c46c8, #6c63ff, #a78bfa);
-  --box-shadow: 0 8px 28px rgba(108,99,255,0.4);
-  font-weight: 800; font-size: 16px; height: 56px;
+// ── Saved Badge ────────────────────────────────────────────────────
+.saved-badge {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 700; color: #10b981;
+  margin-right: 14px;
+  animation: fadeIn 0.2s ease;
+  ion-icon { font-size: 15px; }
 }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 // ── Add Pill Button ────────────────────────────────────────────────
 .add-pill-btn {

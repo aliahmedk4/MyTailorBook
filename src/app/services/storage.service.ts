@@ -248,6 +248,7 @@ export class StorageService {
   async deleteOrder(id: string): Promise<void> {
     await this.idb.deleteOrder(id);
     await this.idb.deleteImage(id);
+    await this.idb.deletePdfHtml(id);
     if (this._ordersCache) this._ordersCache = this._ordersCache.filter(o => o.id !== id);
   }
 
