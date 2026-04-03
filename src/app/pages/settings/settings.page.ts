@@ -18,6 +18,8 @@ export class SettingsPage implements OnInit {
   defaultStatus!: OrderStatus;
   terms: string[] = [];
   pdfStyle!: PdfHeaderStyle;
+  saved = false;
+  private saveTimer: any;
 
   constructor(
     private storage: StorageService,
@@ -36,14 +38,20 @@ export class SettingsPage implements OnInit {
     this.pdfStyle      = this.storage.getPdfHeaderStyle();
   }
 
-  savePdfStyle() {
-    this.storage.savePdfHeaderStyle(this.pdfStyle);
-    this.toast('PDF header style saved');
+  autoSaveTailorInfo() {
+    this.storage.saveTailorInfo(this.tailorInfo);
+    this.flashSaved();
   }
 
-  saveTailorInfo() {
-    this.storage.saveTailorInfo(this.tailorInfo);
-    this.toast('Shop info saved');
+  autoSavePdfStyle() {
+    this.storage.savePdfHeaderStyle(this.pdfStyle);
+    this.flashSaved();
+  }
+
+  private flashSaved() {
+    this.saved = true;
+    clearTimeout(this.saveTimer);
+    this.saveTimer = setTimeout(() => this.saved = false, 2000);
   }
 
   setDefaultStatus(status: OrderStatus) {

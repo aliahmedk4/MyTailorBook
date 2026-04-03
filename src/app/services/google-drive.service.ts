@@ -42,6 +42,7 @@ export class GoogleDriveService {
         client_id: WEB_CLIENT_ID,
         scope: SCOPE,
         callback: (response: any) => {
+          console.log(response.error);
           if (response.error) { reject(new Error(response.error)); return; }
           this.cacheToken(response.access_token, response.expires_in || 3500);
           resolve(response.access_token);

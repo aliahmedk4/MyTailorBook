@@ -57,11 +57,12 @@ export class BackupPage implements OnInit {
     await loading.present();
     try {
       const images = await this.idb.getAllImages();
+      const orders = await this.storage.getOrdersAsync();
       const data = {
         version: 1,
         backedUpAt: new Date().toISOString(),
         customers: this.storage.getCustomers(),
-        orders: this.storage.getOrders(),
+        orders,
         dressConfigs: this.storage.getDressConfigs(),
         tailorInfo: this.storage.getTailorInfo(),
         statuses: this.storage.getStatuses(),

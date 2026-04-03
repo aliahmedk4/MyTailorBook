@@ -4,6 +4,9 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Settings</ion-title>
+    <div slot="end" class="saved-badge" *ngIf="saved">
+      <ion-icon name="checkmark-circle"></ion-icon> Saved
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -18,7 +21,7 @@
         <div class="mfield-icon store-icon"><ion-icon name="storefront-outline"></ion-icon></div>
         <div class="mfield-inner">
           <span class="mfield-lbl">Shop Name</span>
-          <ion-input [(ngModel)]="tailorInfo.name" placeholder="e.g. Ali Tailor House" class="mfield-input"></ion-input>
+          <ion-input [(ngModel)]="tailorInfo.name" placeholder="e.g. Ali Tailor House" class="mfield-input" (ionBlur)="autoSaveTailorInfo()"></ion-input>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -27,7 +30,7 @@
         <div class="mfield-icon spark-icon"><ion-icon name="sparkles-outline"></ion-icon></div>
         <div class="mfield-inner">
           <span class="mfield-lbl">Tagline</span>
-          <ion-input [(ngModel)]="tailorInfo.tagline" placeholder="e.g. Stitching Excellence Since 2010" class="mfield-input"></ion-input>
+          <ion-input [(ngModel)]="tailorInfo.tagline" placeholder="e.g. Stitching Excellence Since 2010" class="mfield-input" (ionBlur)="autoSaveTailorInfo()"></ion-input>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -36,7 +39,7 @@
         <div class="mfield-icon phone-icon"><ion-icon name="call-outline"></ion-icon></div>
         <div class="mfield-inner">
           <span class="mfield-lbl">Contact Number</span>
-          <ion-input [(ngModel)]="tailorInfo.contact" type="tel" placeholder="e.g. 0300-1234567" class="mfield-input"></ion-input>
+          <ion-input [(ngModel)]="tailorInfo.contact" type="tel" placeholder="e.g. 9322760631" class="mfield-input" (ionBlur)="autoSaveTailorInfo()"></ion-input>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -45,7 +48,7 @@
         <div class="mfield-icon mail-icon"><ion-icon name="mail-outline"></ion-icon></div>
         <div class="mfield-inner">
           <span class="mfield-lbl">Email</span>
-          <ion-input [(ngModel)]="tailorInfo.email" type="email" placeholder="e.g. ali@tailor.com" class="mfield-input"></ion-input>
+          <ion-input [(ngModel)]="tailorInfo.email" type="email" placeholder="e.g. ali@tailor.com" class="mfield-input" (ionBlur)="autoSaveTailorInfo()"></ion-input>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -54,16 +57,11 @@
         <div class="mfield-icon loc-icon"><ion-icon name="location-outline"></ion-icon></div>
         <div class="mfield-inner">
           <span class="mfield-lbl">Address</span>
-          <ion-input [(ngModel)]="tailorInfo.address" placeholder="e.g. Shop 5, Main Bazaar, Lahore" class="mfield-input"></ion-input>
+          <ion-input [(ngModel)]="tailorInfo.address" placeholder="e.g. Shop 5, Main Bazaar, Lahore" class="mfield-input" (ionBlur)="autoSaveTailorInfo()"></ion-input>
         </div>
       </div>
 
     </div>
-
-    <ion-button expand="block" class="save-btn" (click)="saveTailorInfo()">
-      <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-      Save Shop Info
-    </ion-button>
 
     <!-- ── PDF Header Style ───────────────────────────────────────── -->
     <div class="section-label" style="margin-top:8px">PDF Invoice Header</div>
@@ -95,7 +93,7 @@
         <div class="color-picker-wrap">
           <div class="color-swatch" [style.background]="pdfStyle.bgColor"></div>
           <input type="color" class="color-native" [value]="pdfStyle.bgColor"
-            (input)="pdfStyle.bgColor = $any($event.target).value"/>
+            (input)="pdfStyle.bgColor = $any($event.target).value; autoSavePdfStyle()"/>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -110,13 +108,13 @@
           <div class="size-row">
             <span class="size-lbl">Size: {{ pdfStyle.brandSize }}px</span>
             <input type="range" min="14" max="36" step="1" class="size-slider"
-              [(ngModel)]="pdfStyle.brandSize"/>
+              [(ngModel)]="pdfStyle.brandSize" (change)="autoSavePdfStyle()"/>
           </div>
         </div>
         <div class="color-picker-wrap">
           <div class="color-swatch" [style.background]="pdfStyle.brandColor"></div>
           <input type="color" class="color-native" [value]="pdfStyle.brandColor"
-            (input)="pdfStyle.brandColor = $any($event.target).value"/>
+            (input)="pdfStyle.brandColor = $any($event.target).value; autoSavePdfStyle()"/>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -131,13 +129,13 @@
           <div class="size-row">
             <span class="size-lbl">Size: {{ pdfStyle.taglineSize }}px</span>
             <input type="range" min="8" max="18" step="1" class="size-slider"
-              [(ngModel)]="pdfStyle.taglineSize"/>
+              [(ngModel)]="pdfStyle.taglineSize" (change)="autoSavePdfStyle()"/>
           </div>
         </div>
         <div class="color-picker-wrap">
           <div class="color-swatch" [style.background]="pdfStyle.taglineColor"></div>
           <input type="color" class="color-native" [value]="pdfStyle.taglineColor"
-            (input)="pdfStyle.taglineColor = $any($event.target).value"/>
+            (input)="pdfStyle.taglineColor = $any($event.target).value; autoSavePdfStyle()"/>
         </div>
       </div>
       <div class="card-divider"></div>
@@ -151,23 +149,18 @@
           <span class="mfield-lbl">Contact / Address Color</span>
           <div class="size-row">
             <span class="size-lbl">Size: {{ pdfStyle.contactSize }}px</span>
-            <input type="range" min="8" max="16" step="1" class="size-slider"
-              [(ngModel)]="pdfStyle.contactSize"/>
+            <input type="range" min="14" max="26" step="1" class="size-slider"
+              [(ngModel)]="pdfStyle.contactSize" (change)="autoSavePdfStyle()"/>
           </div>
         </div>
         <div class="color-picker-wrap">
           <div class="color-swatch" [style.background]="pdfStyle.contactColor"></div>
           <input type="color" class="color-native" [value]="pdfStyle.contactColor"
-            (input)="pdfStyle.contactColor = $any($event.target).value"/>
+            (input)="pdfStyle.contactColor = $any($event.target).value; autoSavePdfStyle()"/>
         </div>
       </div>
 
     </div>
-
-    <ion-button expand="block" class="save-btn" (click)="savePdfStyle()">
-      <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-      Save PDF Header Style
-    </ion-button>
 
     <!-- ── Order Statuses ─────────────────────────────────────────── -->
     <div class="section-label-row">

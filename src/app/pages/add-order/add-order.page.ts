@@ -230,9 +230,16 @@ export class AddOrderPage implements OnInit {
 
     if (this.isEdit) {
       const existing = await this.storage.getOrder(this.orderId);
-      if (existing) await this.storage.updateOrder({ ...existing, ...payload });
+      if (existing) {
+        const updated = { ...existing, ...payload };
+        await this.storage.updateOrder(updated);
+        // async cache — does not block navigation
+        this.pdfService.cacheOrderPdf(updated, selectedCustomer).catch(() => {});
+      }
     } else {
-      await this.storage.addOrder(payload);
+      const saved = await this.storage.addOrder(payload);
+      // async cache — does not block navigation
+      this.pdfService.cacheOrderPdf(saved, selectedCustomer).catch(() => {});
     }
 
     const toast = await this.toastCtrl.create({
@@ -259,13 +266,17 @@ export class AddOrderPage implements OnInit {
   }
 
   async savePdf() {
-    const order = await this.currentOrderSnapshot();
+    const order = this.isEdit
+      ? await this.storage.getOrder(this.orderId)
+      : await this.currentOrderSnapshot();
     if (!order) return;
-    this.pdfService.saveOrderPdf(order, this.customer);
+    await this.pdfService.saveOrderPdf(order, this.customer);
   }
 
   async sendWhatsAppPdf() {
-    const order = await this.currentOrderSnapshot();
+    const order = this.isEdit
+      ? await this.storage.getOrder(this.orderId)
+      : await this.currentOrderSnapshot();
     if (!order) return;
     this.pdfService.shareOrderPdfOnWhatsApp(order, this.customer);
   }

@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { Order } from '../models/order.model';
 
 const DB_NAME    = 'tailorbook';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const ORDERS     = 'orders';
 const IMAGES     = 'images';
+const PDF_HTML   = 'pdf_html';
 
 @Injectable({ providedIn: 'root' })
 export class IdbService {
@@ -22,6 +23,9 @@ export class IdbService {
         }
         if (!db.objectStoreNames.contains(IMAGES)) {
           db.createObjectStore(IMAGES); // key = orderId
+        }
+        if (!db.objectStoreNames.contains(PDF_HTML)) {
+          db.createObjectStore(PDF_HTML); // key = orderId
         }
       };
       req.onsuccess = () => { this.db = req.result; resolve(this.db); };
@@ -148,6 +152,35 @@ export class IdbService {
       Object.entries(images).forEach(([k, v]) => store.put(v, k));
       tx.oncomplete = () => resolve();
       tx.onerror    = () => reject(tx.error);
+    });
+  }
+
+  // ── PDF HTML cache ──────────────────────────────────────────────
+
+  async savePdfHtml(orderId: string, html: string): Promise<void> {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction(PDF_HTML, 'readwrite').objectStore(PDF_HTML).put(html, orderId);
+      req.onsuccess = () => resolve();
+      req.onerror   = () => reject(req.error);
+    });
+  }
+
+  async getPdfHtml(orderId: string): Promise<string | null> {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction(PDF_HTML, 'readonly').objectStore(PDF_HTML).get(orderId);
+      req.onsuccess = () => resolve(req.result ?? null);
+      req.onerror   = () => reject(req.error);
+    });
+  }
+
+  async deletePdfHtml(orderId: string): Promise<void> {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction(PDF_HTML, 'readwrite').objectStore(PDF_HTML).delete(orderId);
+      req.onsuccess = () => resolve();
+      req.onerror   = () => reject(req.error);
     });
   }
 }
