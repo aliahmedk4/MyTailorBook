@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
@@ -33,29 +33,29 @@ export class PdfService {
     await this.shareFile(blob, `${customer.name.replace(/\s+/g, '_')}_orders.pdf`);
   }
 
-  // ── Core ────────────────────────────────────────────────────────
+  // â”€â”€ Core â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private async generatePdfBlob(html: string): Promise<Blob> {
-    const W = 595; // A4 at 72dpi — fits any screen
+    const W = 1794; // A4 at 72dpi â€” fits any screen
 
     const container = document.createElement('div');
-    container.style.cssText = `position:fixed;left:0;top:0;width:${W}px;background:#fff;z-index:99999;visibility:hidden;`;
-    container.innerHTML = html.replace(/width:794px/g, `width:${W}px`)
-                              .replace(/width:794px/g, `width:${W}px`);
+    container.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;background:#fff;`;
+    container.innerHTML = html.replace(/width:1794px/g, `width:${W}px`)
+                              .replace(/width:1794px/g, `width:${W}px`);
     document.body.appendChild(container);
 
     await new Promise(r => setTimeout(r, 300));
 
     try {
       const canvas = await html2canvas(container, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const imgData = canvas.toDataURL('image/jpeg', 1);
       const pdfW    = 210;
       const pdfH    = (canvas.height * pdfW) / canvas.width;
       const doc     = new jsPDF({ unit: 'mm', format: [pdfW, pdfH], orientation: 'portrait' });
@@ -66,7 +66,7 @@ export class PdfService {
     }
   }
 
-  // ── Save ────────────────────────────────────────────────────────
+  // â”€â”€ Save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private async saveToDevice(blob: Blob, fileName: string): Promise<void> {
     if (Capacitor.isNativePlatform()) {
@@ -101,7 +101,7 @@ export class PdfService {
     });
   }
 
-  // ── Order HTML (table-based, no flexbox) ────────────────────────
+  // â”€â”€ Order HTML (table-based, no flexbox) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private buildOrderHtml(order: Order, customer: Customer | undefined): string {
     const W      = 595;
@@ -200,7 +200,7 @@ export class PdfService {
           <tr>
             <td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid ${sc};border-radius:10px;padding:14px;vertical-align:top;">
               <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:8px">Customer</div>
-              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px">${customer?.name || o.customerName || '—'}</div>
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px">${customer?.name || o.customerName || 'â€”'}</div>
               ${customer?.phone ? `<div style="font-size:11px;color:#64748b;margin-top:3px">${customer.phone}</div>` : ''}
               ${(customer as any)?.address ? `<div style="font-size:11px;color:#64748b;margin-top:3px">${(customer as any).address}</div>` : ''}
             </td>
@@ -229,7 +229,7 @@ export class PdfService {
     </div>`;
   }
 
-  // ── Customer HTML (table-based) ─────────────────────────────────
+  // â”€â”€ Customer HTML (table-based) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private buildCustomerHtml(customer: Customer, orders: Order[]): string {
     const W    = 595;
@@ -307,7 +307,7 @@ export class PdfService {
     </div>`;
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private statusColor(status: string): string {
     const map: Record<string, string> = {
@@ -319,3 +319,4 @@ export class PdfService {
     return map[status] || '#6c63ff';
   }
 }
+
